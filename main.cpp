@@ -13,6 +13,8 @@
 
 using namespace std;
 
+// test clone
+
 int main()
 {
   // set seed

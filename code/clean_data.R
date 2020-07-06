@@ -1,3 +1,4 @@
+library(tidyverse)
 #the plde and vero data set
 dat1<-read.csv("data/PLDEvVero.FinalDatasetFromAIP.csv")
 #the trycy data set
@@ -6,9 +7,21 @@ dat2<-read.csv("data/VEROvTRCY.FinalDatasetFromAIP.csv")
 
 
 
-vero_plde<-data.frame(focal=dat1$Focal,label=dat1$label, verotreatment=dat1$Vtrt, veroplanted=dat1$VEROseeds,verodensity=dat1$Vn, pldetreatment=dat1$Ptrt, pldeplanted=dat1$PLDEseeds, pldedensity=dat1$Pn, totalother=dat1$total.other, originalenv=dat1$Original.Env, exposedenv=dat1$Exp.Env, replicate=dat1$replicate, totalseeds= dat1$Seeds.total)
+#rename variables so it is easy to understand them
+vero_plde<- dat1 %>% rename(verotreatment=Vtrt, veroplanted=VEROseeds, verodensity=Vn, pldetreatment=Ptrt, pldeplanted=PLDEseeds, pldedensity=Pn, totalother=total.other, originalenv=Original.Env, exposedenvo=Exp.Env, totalseeds=Seeds.total)
+#make the exposed environment a variable
+vero_plde<- vero_plde %>% mutate( env = ifelse(originalenv=="shade",1,0))
 
 
-vero_trcy<-data.frame(focal=dat2$focal,label=dat2$label, verotreatment=dat2$Nv, veroplanted=dat2$Veroseeds.planted, verodensity=dat2$Nv.1,  trcytreatment=dat2$Nt, trcyplanted=dat2$TRCYseeds.planted, trcydensity=dat2$Nt.1, totalother=dat2$totalother, originalenv=dat2$Original.Env, exposedenv=dat2$Exp.Env, replicate=dat2$replicate, totalseeds=dat2$number.of.seeds)
+
+
+
+#rename in a way that is easy to understand
+vero_trcy <- dat2 %>%  rename( verotreatment = Nv, veroplanted=Veroseeds.planted, verodensity=Nv.1, trcytreatment=Nt, trcyplanted=TRCYseeds.planted, trcydensity=Nt.1, originalenv=Original.Env, exposedenv=Exp.Env, totalseeds=number.of.seeds)
+
+#make the  exposed environment a variable 
+vero_trcy <- vero_trcy %>% mutate( env = ifelse(originalenv=="woody",1,0 ))
+
+
 
 rm(dat1,dat2)

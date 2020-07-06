@@ -9,12 +9,12 @@ dat2<-as_tibble(dat2)
 
 
 #rename variables so it is easy to understand them
-# vero_plde<- dat1 %>% rename(verotreatment=Vtrt, veroplanted=VEROseeds, verodensity=Vn, pldetreatment=Ptrt, pldeplanted=PLDEseeds, pldedensity=Pn, totalother=total.other, originalenv=Original.Env, exposedenvo=Exp.Env, focal=Focal ,totalseeds=Seeds.total)
-# #make the exposed environment a variable
-# vero_plde<- vero_plde %>% mutate( env = ifelse(originalenv=="shade",1,0))
-# 
-# 
-# 
+vero_plde_data<- dat1 %>% rename(verotreatment=Vtrt, veroplanted=VEROseeds, verodensity=Vn, pldetreatment=Ptrt, pldeplanted=PLDEseeds, pldedensity=Pn, totalother=total.other, originalenv=Original.Env, exposedenvo=Exp.Env, focal=Focal ,totalseeds=Seeds.total)
+#make the exposed environment a variable
+vero_plde<- vero_plde_data %>% mutate( env = ifelse(originalenv=="shade",1,0))  %>% drop_na()
+
+
+
 
  
 #rename in a way that is easy to understand
@@ -26,4 +26,4 @@ vero_trcy <- vero_trcy_data %>% mutate( env = ifelse(originalenv=="woody",1,0 ))
 
 
 
-rm(dat1,dat2, vero_trcy_data)
+rm(dat1,dat2,vero_plde_data ,vero_trcy_data)

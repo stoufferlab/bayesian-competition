@@ -3,7 +3,7 @@
 library(brms)
 source("code/clean_data.R")
 #This script works with vero and trcy, so we remove plantago
-#rm(vero_plde)
+rm(vero_plde)
 #vero = i
 #trcy = j
 vero_focal<- vero_trcy %>% filter(focal == "V")

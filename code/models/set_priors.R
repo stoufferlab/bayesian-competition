@@ -16,14 +16,12 @@ rm(vero_trcy)
 prior_vero = c(
   prior(normal(0,10), nlpar = "alphaii"),
   prior(normal(0, 10), nlpar = "alphaij"),
-  prior(normal(0, 10), nlpar = "lambdai"),
-  prior(normal(0,10), nlpar = "e")
+  prior(normal(0, 10), nlpar = "lambdai")
 )
 
 
 prior_trcy = c(
   prior(normal(0,10), nlpar = "alphajj"),
   prior(normal(0, 10), nlpar = "alphaji"),
-  prior(normal(0, 10), nlpar = "lambdaj"),
-  prior(normal(0,10), nlpar= "e")
+  prior(normal(0, 10), nlpar = "lambdaj")
 )

@@ -9,32 +9,32 @@ Omega <- function(alpha){
   return(d[1]) 
   
 }
-Omega_song <- function(alpha) {
-  S <- nrow(alpha)
-  omega <- function(S, Sigma) {
-    m <- matrix(0, S, 1)
-    a <- matrix(0, S, 1)
-    b <- matrix(Inf, S, 1)
-    d <- pmvnorm(lower = rep(0, S), upper = rep(Inf, S), mean = rep(0, S), sigma = Sigma)
-    out <- d[1]^(1 / S)
-    return(out)
-  }
-  #   if (length(which(diag(alpha) == 0)) == 0) {
-  #     Sigma <- chol2inv(alpha, size = NCOL(alpha), LINPACK = FALSE)
-  #     return(omega(S, Sigma))
-  #   }
-  #   else {
-  f <- function(m) class(try(solve(t(m) %*% m), silent = T)) == "matrix"
-  if (f(alpha) == FALSE) {
-    return(0)
-  }
-  else {
-    Sigma <- solve(t(alpha) %*% alpha)
-    return(omega(S, Sigma))
-  }
-  #   }
-  # }
-}
+# Omega_song <- function(alpha) {
+#   S <- nrow(alpha)
+#   omega <- function(S, Sigma) {
+#     m <- matrix(0, S, 1)
+#     a <- matrix(0, S, 1)
+#     b <- matrix(Inf, S, 1)
+#     d <- pmvnorm(lower = rep(0, S), upper = rep(Inf, S), mean = rep(0, S), sigma = Sigma)
+#     out <- d[1]^(1 / S)
+#     return(out)
+#   }
+#   #   if (length(which(diag(alpha) == 0)) == 0) {
+#   #     Sigma <- chol2inv(alpha, size = NCOL(alpha), LINPACK = FALSE)
+#   #     return(omega(S, Sigma))
+#   #   }
+#   #   else {
+#   f <- function(m) class(try(solve(t(m) %*% m), silent = T)) == "matrix"
+#   if (f(alpha) == FALSE) {
+#     return(0)
+#   }
+#   else {
+#     Sigma <- solve(t(alpha) %*% alpha)
+#     return(omega(S, Sigma))
+#   }
+#   #   }
+#   # }
+# }
 r_centroid <- function(alpha){
   n <- nrow(alpha)
   D <- diag(1/sqrt(diag(t(alpha)%*%alpha)))

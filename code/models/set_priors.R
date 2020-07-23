@@ -19,9 +19,30 @@ prior_vero = c(
   prior(normal(0, 10), nlpar = "lambdai")
 )
 
+prior_vero_exp = c(
+  prior(normal(0,10), nlpar = "alphaii"),
+  prior(normal(0, 10), nlpar = "alphaij"),
+  prior(normal(0, 10), nlpar = "lambdai"),
+  prior(normal(0, 10), nlpar = "bi")
+)
+
+
+
 
 prior_trcy = c(
+  prior(normal(0,100), nlpar = "alphajj"),
+  prior(normal(0, 100), nlpar = "alphaji"),
+  prior(normal(0, 100), nlpar = "lambdaj")
+)
+
+
+
+
+prior_trcy_exp = c(
   prior(normal(0,10), nlpar = "alphajj"),
   prior(normal(0, 10), nlpar = "alphaji"),
-  prior(normal(0, 10), nlpar = "lambdaj")
+  prior(normal(0, 10), nlpar = "lambdaj"),
+  prior(normal(0, 10), nlpar = "bj")
 )
+
+

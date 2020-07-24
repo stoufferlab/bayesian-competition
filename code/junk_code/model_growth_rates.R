@@ -39,10 +39,10 @@ vero_growth$BV <- growth_vero_BV
 rm(lambda_vero_BV,growth_vero_BV)
 
 lambda_trcy_BV  <- posterior_samples(BEV_trcy, pars = "b_lambdaj_Intercept", exact_match = TRUE)[,1]
-growth_tracy_BV <- bev_growth(sj,gj,lambda_trcy_BV)
-trcy_growth$BV  <- growth_tracy_BV
+growth_trcy_BV <- bev_growth(sj,gj,lambda_trcy_BV)
+trcy_growth$BV  <- growth_trcy_BV
 
-rm(lambda_trcy_BV,growth_tracy_BV)
+rm(lambda_trcy_BV,growth_trcy_BV)
 
 
 ###############################################################################
@@ -55,13 +55,13 @@ vero_growth$RC <- growth_vero_RC
 rm(lambda_vero_RC,growth_vero_RC)
 
 lambda_trcy_RC  <- posterior_samples(RC_trcy, pars = "b_lambdaj_Intercept", exact_match = TRUE)[,1]
-growth_tracy_RC <- ricker_growth(sj,gj,lambda_trcy_RC)
-trcy_growth$RC  <- growth_tracy_RC
+growth_trcy_RC <- ricker_growth(sj,gj,lambda_trcy_RC)
+trcy_growth$RC  <- growth_trcy_RC
 
 rm(lambda_trcy_RC,growth_tracy_RC)
 
 #######################################################################################
-#LOTKA-VOLTERRA MODEL
+#LAW model
 
 lambda_vero_LA <- posterior_samples(LAW_vero,pars="b_lambdai_Intercept",exact_match = TRUE)[,1]
 b_vero_LA      <- posterior_samples(LAW_vero,pars="b_bi_Intercept",exact_match = TRUE)[,1] 

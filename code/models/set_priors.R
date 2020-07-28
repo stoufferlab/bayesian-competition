@@ -9,6 +9,15 @@ prior = c(
   prior(normal(0, 10), nlpar = "alphaij"),
   prior(normal(0, 10), nlpar = "lambda")
 )
+
+
+prior_exp = c(
+  prior(normal(0, 10), nlpar = "alphaii"),
+  prior(normal(0, 10), nlpar = "alphaij"),
+  prior(normal(0, 10), nlpar = "lambda"), 
+  prior(normal(0, 10), nlpar = "b")
+)
+
 # 
 # prior_vero_alt = c(
 #   prior(normal(0,10), nlpar = "alphaii"),

@@ -16,9 +16,9 @@ posterior_parameters<-function(model, fun, s ,g, exp_param){
   lambda      <- post$b_lambda_Intercept
   lambda_env <-  lambda + post$b_lambda_env
   
-  if( isTRUE(exp_param)){
+  if(exp_param){
     b           <- post$b_b_Intercept
-    b_env       <- post$b_b_env_Intercept
+    b_env       <- post$b_b_env
     growth     <- fun(s,g,lambda,b)
     env_growth <- fun(s,g,lambda,b_env)
   }else{

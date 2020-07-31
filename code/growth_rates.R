@@ -26,7 +26,7 @@ ricker_growth<-function(s,g,lambda){
 law_growth<-function(s,g,lambda,b_param){
   a<- lambda*g
   b<- 1- ( (1-g)*s)
-  r<- -1 + (a/b)^b_param
+  r<- -1 + ( (a/b)^ (1/b_param))
   return(r) 
 }
 

@@ -81,9 +81,23 @@ LAW_LAW_1 <-make_figure_theta(vero_model =  LAW_vero, vero_function = law_growth
 
 
 
- pdf(file="omega_multi_model.pdf", width = 14)
+ pdf(file="omega.pdf", width = 14)
  grid.arrange(BEV_BEV_0, RC_BEV_0, LAW_BEV_0,
               BEV_RC_0,  RC_RC_0,  LAW_RC_0,
               BEV_LAW_0, RC_LAW_0, LAW_LAW_0, 
               ncol=3, nrow=3)
  dev.off()
+ 
+ 
+ 
+ 
+ pdf(file="omega_environment.pdf", width = 14)
+ grid.arrange(BEV_BEV_1, RC_BEV_1, LAW_BEV_1,
+              BEV_RC_1,  RC_RC_1,  LAW_RC_1,
+              BEV_LAW_1, RC_LAW_1, LAW_LAW_1, 
+              ncol=3, nrow=3)
+ dev.off()
+ 
+ 
+ 
+ 

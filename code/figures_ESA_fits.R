@@ -11,7 +11,7 @@ make_conditions()
 df <- data.frame("conspecifics"= seq(0,80,1))
 
 
-bev<-marginal_effects(BEV_vero ,effects = "conspecifics", select_points = 10)) 
+bev<-marginal_effects(LAW_vero ,effects = "conspecifics", select_points = 10) 
 
 plot(bev, plot = FALSE)[[1]] + 
   theme_bw()+

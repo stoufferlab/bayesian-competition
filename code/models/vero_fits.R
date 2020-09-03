@@ -1,157 +1,67 @@
 ###Model fits for species vero 
 library(brms)
 source("code/clean_data.R")
-#we remove trcy just to be sure
-rm(trcy_focal)
 source("code/models/set_priors.R")
-source("code/models/model_formulas.R")
+source("code/models/model_formulas_pairs.R")
+source("code/models/automate_fit.R")
 
-#Beverton-Holt model
-#with pairs
-vero_beverton_pairs_zip <- brm(
-  formula = beverton_holt_pairs,
-  prior = prior_pairs,
-  data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  control = list(adapt_delta = .99, max_treedepth=15)
-)
-vero_beverton_pairs_zip<-add_criterion(vero_beverton_pairs_zip, criterion = "waic")
-saveRDS(vero_beverton_pairs_zip, file = "model_objects/vero_beverton_pairs_zip.RDS")
+### We create lists of formulas on which to iterate
+formulas_pairs <- list( bh = beverton_holt, rc = ricker, hs = hassell, lv = lotka_volterra, st =stouffer)
+formulas_multi <- list( bh = beverton_holt_multi, rc = ricker_multi, hs = hassell_multi, lv = lotka_volterra_multi, st =stouffer_multi)
 
-#with other species present
-vero_beverton_multi_zip <- brm(
-  formula = beverton_holt_multi,
-  prior = prior_multi,
+#For species pairs, using a poisson distribution
+model_fits(
+  focal = "vero",
   data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  save_all_pars = TRUE,
-  control = list(adapt_delta = .99, max_treedepth=15)
+  distribution = poisson(link = "identity"),
+  formulas = formulas_pairs,
+  priors = prior_pairs,
+  priors_exponent = prior_exp_pairs,
+  num_species = "pairs",
+  last_name = "poisson"
 )
 
-vero_beverton_multi_zip<-add_criterion(vero_beverton_multi_zip, criterion = "waic")
-saveRDS(vero_beverton_multi_zip, file = "model_objects/vero_beverton_multi_zip.RDS")
-
-
-######## The Ricker model
-#pairs
-vero_ricker_pairs_zip <- brm(
-  formula = ricker_pairs,
-  prior = prior_pairs,
+# For species pairs again, using a zero inflated poisson
+model_fits(
+  focal = "vero",
   data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  control = list(adapt_delta = .99, max_treedepth=15)
-)
-vero_ricker_pairs_zip <- add_criterion(vero_ricker_pairs_zip, criterion = "waic")
-saveRDS(vero_ricker_pairs_zip, file ="model_objects/vero_ricker_pairs_zip.RDS")
-
-#with other species present
-vero_ricker_multi_zip <- brm(
-  formula = ricker_multi,
-  prior = prior_multi,
-  data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  control = list(adapt_delta = .99, max_treedepth=15)
-)
-vero_ricker_multi_zip <- add_criterion(vero_ricker_multi_zip, criterion = "waic")
-saveRDS(vero_ricker_multi_zip, file ="model_objects/vero_ricker_multi_zip.RDS")
-
-####The hassell model
-
-vero_hassel_pairs_zip <- brm(
-  formula = hassell_pairs,
-  prior = prior_exp_pairs,
-  data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  control = list(adapt_delta = .99, max_treedepth=15)
-)
-
-vero_hassell_pairs_zip <- add_criterion(vero_hassell_pairs_zip, criterion = "waic")
-saveRDS(vero_ricker_pairs_zip, file ="model_objects/vero_ricker_pairs_zip.RDS")
-
-
-###with multi species
-
-
-vero_hassel_multi_zip <- brm(
-  formula = hassell_multi,
-  prior = prior_exp_multi,
-  data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits = 1,
-  control = list(adapt_delta = .99, max_treedepth=15)
-)
-vero_hassell_multi_zip <- add_criterion(vero_hassell_multi_zip, criterion = "waic")
-saveRDS(vero_ricker_multi_zip, file ="model_objects/vero_ricker_multi_zip.RDS")
-
-### lotka volterra
-
-
-vero_lotka_pairs_zip <- brm(
-  formula = lotka_volterra_pairs,
-  prior = prior_pairs,
-  data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  control = list(adapt_delta = .99, max_treedepth=15)
-)
-
-vero_lotka_pairs_zip <- add_criterion( vero_lotka_pairs_zip, criterion="waic")
-saveRDS(vero_lotka_pairs_zip, file ="model_objects/vero_lotka_pairs_zip.RDS")
-
-#### with multiple species
-
-
-vero_lotka_multi_zip <- brm(
-  formula = lotka_volterra_multi,
-  prior = prior_multi,
-  data = vero_focal,
-  family = zero_inflated_poisson(link = "identity"),
-  iter = 8000,
-  warmup = 4000,
-  cores   = 4,
-  chains  = 4,
-  inits   = 1 ,
-  control = list(adapt_delta = .99, max_treedepth=15)
+  distribution = zero_inflated_poisson(link = "identity"),
+  formulas = formulas_pairs,
+  priors = prior_pairs,
+  priors_exponent = prior_exp_pairs,
+  num_species = "pairs",
+  last_name = "zipoisson"
 )
 
 
-vero_lotka_multi_zip <- add_criterion( vero_lotka_multi_zip, criterion="waic")
-saveRDS(vero_lotka_multi_zip, file ="model_objects/vero_multi_pairs_zip.RDS")
+#### for multispecies using poisson
 
 
+model_fits(
+  focal = "vero",
+  data = vero_focal,
+  distribution = poisson(link = "identity"),
+  formulas = formulas_multi,
+  priors = prior_multi,
+  priors_exponent = prior_exp_multi,
+  num_species = "multispecies",
+  last_name = "poisson"
+)
+
+
+
+# for multispecies using zip
+
+model_fits(
+  focal = "vero",
+  data = vero_focal,
+  distribution = zero_inflated_poisson(link = "identity"),
+  formulas = formulas_multi,
+  priors = prior_multi,
+  priors_exponent = prior_exp_multi,
+  num_species = "multispecies",
+  last_name = "poisson"
+)
 
 
 

@@ -29,6 +29,6 @@ prior_exp_multi = c(
   prior(normal(0, 10), nlpar = "alphaij"),
   prior(normal(0, 10), nlpar = "lambda"),
   prior(normal(0, 10), nlpar = "beta"),
-  prior(normal(0, 10), nlpar = "alphaik")
+  prior(normal(0, 1), nlpar = "alphaik")
 )
 

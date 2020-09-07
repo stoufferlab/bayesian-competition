@@ -42,7 +42,7 @@ lotka_volterra_multi<-bf(
 
 
 stouffer_multi <-bf(
-  totalseeds~ (exp(lambda) * (1 - (alphaii*conspecifics) - (alphaij*heterospecifics) - (alphaik*totalother) ) ) * 
+  totalseeds~ (exp(lambda) * (1 - ( alphaii*conspecifics) - (alphaij*heterospecifics) - (alphaik*totalother) ) ) * 
     ( (1- exp( exp(beta)* (conspecifics + 1) )) / ( exp(beta) * (conspecifics+1) )) ,
   lambda  ~ 1 + env,
   alphaii ~ 1 + env,
@@ -51,4 +51,3 @@ stouffer_multi <-bf(
   alphaik ~ 1 + env,
   nl=T
 )
-

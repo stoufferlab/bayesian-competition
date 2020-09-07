@@ -18,30 +18,25 @@ m3<-add_criterion(m3, "waic")
 }
 
 
-
-
-
-
-
-c2<-function(m1,m2){
-  
-  
-  m1<-add_criterion(m1, "waic")
-  m2<-add_criterion(m2, "waic")
-
-  w<-loo_compare(m1,m2,criterion="waic")
-  print(w)
-  m<-model_weights(m1,m2,weights="waic")
-  print(m)
-  
-  
-  
-}
-
-
-
 model_compare<-function(...){
- for(i in list(...)){
+   models <- list(...)
+   waic_value <- c()
+   looic_value <-c()
    
- }
+   for(i in 1:length(models)){
+     w <- waic(models[[i]])
+     wa <- w$waic
+     waic_value[i] <-wa
+     
+     l <- loo(models[[i]])
+     lo <- l$looic
+     looic_value[i] <-lo
+   }
+  
+  waic_weights <- model_weights(..., weights = "waic")
+  loo_weights <- model_weights(..., weights = "loo")
+  out <- cbind(waic_value, waic_weights, looic_value, loo_weights)
+  out <- out[order(waic_weights),]
+  return(out)
+  
 }

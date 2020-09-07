@@ -1,5 +1,5 @@
 *.RDS
 *.pdf
-
+*.rds
 
 .Rproj.user

@@ -8,24 +8,39 @@ source("code/growth_rates.R")
 
 
 #function to generate a posterior growth rate (and an environmental growth rate) for each point of the posterior, for one model. exp_param is binary that tells it if to take into consideration if the model has an exponential parameter
-posterior_parameters<-function(model, fun, s ,g, exp_param){
+posterior_parameters<-function(model, growth_fun, equilibrium_fun ,s ,g, exp_param){
   post        <- posterior_samples(model)
+  
   lambda      <- exp(post$b_lambda_Intercept)
-  lambda_env  <- exp(lambda + post$b_lambda_env)
+  lambda_env  <- exp(post$b_lambda_Intercept + post$b_lambda_env)
+  
+  alphaii <- post$b_alphaii_Intercept
+  alphaii_env <-post$b_alphaii_Intercept + post$b_alphaii_env
+  
+  alphaij     <- post$b_alphaij_Intercept
+  alphaij_env  <- post$b_alphaij_Intercept + post$b_alphaij_env
   
   if(exp_param){
     b           <- post$b_beta_Intercept
-    b_env       <- post$b_beta_env
-    growth      <- fun(s,g,lambda,b)
-    env_growth  <- fun(s,g,lambda_env,b_env)
+    b_env       <- post$b_beta_Intercept + post$b_beta_env
+    growth      <- growth_fun(s,g,lambda,b)
+    env_growth  <- growth_fun(s,g,lambda_env,b_env)
+    equilibrium <- equilibrium_fun(s,g,lambda,b,alphaii)
+    env_equilibrium <-equilibrium_fun(s,g,lambda_env,b_env,alphaii_env)
   }else{
-    growth     <- fun(s,g,lambda)
-    env_growth <- fun(s,g,lambda_env)
+    growth     <- growth_fun(s,g,lambda)
+    env_growth <- growth_fun(s,g,lambda_env)
+    equilibrium <- equilibrium_fun(s,g,lambda,alphaii)
+    env_equilibrium <-equilibrium_fun(s,g,lambda_env,alphaii_env)
   }
   
-  all_posterior <- cbind(post,growth,env_growth)
-  return(all_posterior)
+ posterior <- as.data.frame(cbind(lambda, lambda_env, alphaii, alphaii_env, alphaij, alphaij_env,growth,env_growth, equilibrium, env_equilibrium))
+ 
+ 
+  return(posterior)
 }
+
+
 
 #function to generate an alpha matrix based on one row of the posterior for each species. env is a binary that tells it if to take into consideration the environmental values of alpha
 alpha_matrix <- function(vero_row, trcy_row, gi,gj, env){

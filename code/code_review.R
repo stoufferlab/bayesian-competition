@@ -18,14 +18,14 @@ beverton_holt<-bf(
   lambda  ~ 1 + env,
   alphaii ~ 1 + env,
   alphaij ~ 1 + env,
-  nl=T)
+  nl=TRUE)
 
 ricker<- bf(
   totalseeds~ exp(lambda) *exp( -(alphaii*conspecifics)  - (alphaij*heterospecifics))  ,
   lambda  ~ 1 + env,
   alphaii ~ 1 + env,
   alphaij ~ 1 + env,
-  nl=T)
+  nl=TRUE)
 
 # we fit the models 
 beverton_fit <- brm(
@@ -56,32 +56,42 @@ ricker_fit <- brm(
 
 
 
-model_compare<-function(...){
+model_compare <- function(..., sort.by = "waic"){
   models <- list(...)
-  waic_value <- c()
-  looic_value <-c()
   
-  for(i in 1:length(models)){
-    w <- waic(models[[i]])
-    wa <- w$waic
-    waic_value[i] <-wa
-    
-    l <- loo(models[[i]])
-    lo <- l$looic
-    looic_value[i] <-lo
+  # print a warning if only one model is supplied
+  if (length(models) == 1) {
+    warning("Only one model is supplied. Comparing one model is not meaningful.")
   }
   
+  # switching to lapply from for-loop
+  ic <- lapply(models, function(m) {
+    w <- waic(m)
+    wa <- w$estimates["waic", "Estimate"]  # in newer brms access with "estimate", switch back to $waic if you're still using older brms
+
+    l <- loo(m)
+    lo <- l$estimates["looic", "Estimate"]
+
+    return(c(waic = wa, looic = lo))
+  })
+  ic <- do.call(rbind, ic)
+
   waic_weights <- model_weights(..., weights = "waic")
   loo_weights <- model_weights(..., weights = "loo")
-  out <- cbind(waic_value, waic_weights, looic_value, loo_weights)
-  out <- out[order(waic_weights),]
+  
+  out <-
+    cbind(waic = ic[, "waic"],
+          waic_weights,
+          looic = ic[, "looic"],
+          loo_weights)
+  out <- out[order(out[, sort.by]),]  # sort.by can be alternatively "looic" now
   return(out)
   
 }
 
 
 #We test it, and a bunch of warnings come up, but just as an example
-
-model_compare(beverton_fit,ricker_fit)
-
-
+# both sort methods are the same, since they have the same ranking, but flexible for other scenarios
+model_compare(beverton_fit, ricker_fit, sort.by = "waic")
+model_compare(beverton_fit, ricker_fit, sort.by = "looic")
+model_compare(beverton_fit)

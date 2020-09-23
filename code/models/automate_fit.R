@@ -30,9 +30,9 @@ model_fits <-
           iter = 8000,
           warmup = 4000,
           cores   = 4,
-          chains  = 4,
-          inits   = 1,
-          control = list(adapt_delta = .99, max_treedepth=13)
+          chains  = 2,
+          inits   = 1
+       #   control = list(adapt_delta = .99)
         )
         
         id <- paste0("model_objects/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
@@ -45,11 +45,11 @@ model_fits <-
           data =  data,
           family = distribution,
           iter = 8000,
-          warmup = 4000,
+          warmup = 6000,
           cores   = 4,
-          chains  = 4,
-          inits   = 1,
-          control = list(adapt_delta = .99, max_treedepth=13)
+          chains  = 2,
+          inits = 1,
+          control = list(adapt_delta = .99)
         )
         
         id <- paste0("model_objects/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")

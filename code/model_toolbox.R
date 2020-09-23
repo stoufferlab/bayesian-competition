@@ -1,45 +1,78 @@
 #toolbox for example BEV competition
 require(brms)
 source("code/feasibility_toolbox.R")
-source("code/growth_rates.R")
+
 
 
 
 
 
 #function to generate a posterior growth rate (and an environmental growth rate) for each point of the posterior, for one model. exp_param is binary that tells it if to take into consideration if the model has an exponential parameter
-posterior_parameters<-function(model, growth_fun, equilibrium_fun ,s ,g, exp_param){
-  post        <- posterior_samples(model)
+posterior_parameters <- function(model,
+           growth_fun,
+           s ,
+           g,
+           exp_param) {
+    post        <- posterior_samples(model, robust=TRUE)
+    
+    lambda      <- exp(post$b_lambda_Intercept)
+    lambda_env  <- exp(post$b_lambda_Intercept + post$b_lambda_env)
+    
+    alphaii <- post$b_alphaii_Intercept
+    alphaii_env <- post$b_alphaii_Intercept + post$b_alphaii_env
+    
+    alphaij     <- post$b_alphaij_Intercept
+    alphaij_env  <- post$b_alphaij_Intercept + post$b_alphaij_env
+    
+    if (exp_param) {
+      b           <- exp(post$b_beta_Intercept)
+      b_env       <- exp(post$b_beta_Intercept + post$b_beta_env)
+      growth      <- growth_fun(
+        s = s,
+        g = g,
+        lambda = lambda,
+        b = b
+      )
+      env_growth  <- growth_fun(
+        s = s,
+        g = g,
+        lambda = lambda_env,
+        b = b_env
+      )
+      equilibrium <- growth/(alphaii*g)
+      
+      env_equilibrium <- env_growth/(alphaii_env*g)} else{
+      growth     <- growth_fun(s = s,
+                               g = g, 
+                               lambda = lambda)
+      env_growth <- growth_fun(s = s, 
+                               g = g, 
+                               lambda = lambda_env)
+      equilibrium <- growth/(alphaii *g)
+      
+      env_equilibrium <- env_growth/(alphaii_env*g)
   
-  lambda      <- exp(post$b_lambda_Intercept)
-  lambda_env  <- exp(post$b_lambda_Intercept + post$b_lambda_env)
-  
-  alphaii <- post$b_alphaii_Intercept
-  alphaii_env <-post$b_alphaii_Intercept + post$b_alphaii_env
-  
-  alphaij     <- post$b_alphaij_Intercept
-  alphaij_env  <- post$b_alphaij_Intercept + post$b_alphaij_env
-  
-  if(exp_param){
-    b           <- post$b_beta_Intercept
-    b_env       <- post$b_beta_Intercept + post$b_beta_env
-    growth      <- growth_fun(s,g,lambda,b)
-    env_growth  <- growth_fun(s,g,lambda_env,b_env)
-    equilibrium <- equilibrium_fun(s,g,lambda,b,alphaii)
-    env_equilibrium <-equilibrium_fun(s,g,lambda_env,b_env,alphaii_env)
-  }else{
-    growth     <- growth_fun(s,g,lambda)
-    env_growth <- growth_fun(s,g,lambda_env)
-    equilibrium <- equilibrium_fun(s,g,lambda,alphaii)
-    env_equilibrium <-equilibrium_fun(s,g,lambda_env,alphaii_env)
+    }
+    
+    posterior <-
+      as.data.frame(
+        cbind(
+          lambda,
+          lambda_env,
+          alphaii,
+          alphaii_env,
+          alphaij,
+          alphaij_env,
+          growth,
+          env_growth,
+          equilibrium,
+          env_equilibrium
+        )
+      )
+    
+    
+    return(posterior)
   }
-  
- posterior <- as.data.frame(cbind(lambda, lambda_env, alphaii, alphaii_env, alphaij, alphaij_env,growth,env_growth, equilibrium, env_equilibrium))
- 
- 
-  return(posterior)
-}
-
 
 
 #function to generate an alpha matrix based on one row of the posterior for each species. env is a binary that tells it if to take into consideration the environmental values of alpha
@@ -49,18 +82,18 @@ alpha_matrix <- function(vero_row, trcy_row, gi,gj, env){
   
   #if env, then alphas are alpha + alpha_env 
   if(env){
-    alpha11 <- vero_row$b_alphaii_Intercept + vero_row$b_alphaii_env
-    alpha21 <- trcy_row$b_alphaij_Intercept + trcy_row$b_alphaij_env
-    alpha12 <- vero_row$b_alphaij_Intercept + vero_row$b_alphaij_env
-    alpha22 <- trcy_row$b_alphaii_Intercept + trcy_row$b_alphaii_env
-    alpha   <- matrix( c(alpha11,alpha21,alpha12,alpha22) ,ncol=2,nrow=2)
+    alpha11 <- vero_row$alphaii_env
+    alpha21 <- trcy_row$alphaij_env
+    alpha12 <- vero_row$alphaij_env
+    alpha22 <- trcy_row$alphaii_env
+    alpha   <- matrix( c(alpha11,alpha21,alpha12,alpha22) ,ncol=2,nrow=2) 
     alpha   <- sweep (alpha,MARGIN=2,STAT=c(gi,gj),FUN="*")
     
   }else{
-    alpha11 <- vero_row$b_alphaii_Intercept
-    alpha21 <- trcy_row$b_alphaij_Intercept
-    alpha12 <- vero_row$b_alphaij_Intercept
-    alpha22 <- trcy_row$b_alphaii_Intercept
+    alpha11 <- vero_row$alphaii
+    alpha21 <- trcy_row$alphaij
+    alpha12 <- vero_row$alphaij
+    alpha22 <- trcy_row$alphaii
     alpha   <- matrix( c(alpha11,alpha21,alpha12,alpha22) ,ncol=2,nrow=2) 
     alpha   <- sweep (alpha,MARGIN=2,STAT=c(gi,gj),FUN="*")
     
@@ -70,7 +103,7 @@ alpha_matrix <- function(vero_row, trcy_row, gi,gj, env){
 
 
 #function that spits out an omega, feasibility and theta calculated from the posterior of two models. env is a binary that tells it if to take iinto consideration the environmental variables
-posterior_feasibility<-function(vero_post,trcy_post,si,sj,gi,gj,env){
+posterior_feasibility<-function(vero_post,trcy_post,gi,gj,env){
   
   num_posterior<- identical(nrow(vero_post),nrow(trcy_post))
   if(num_posterior){
@@ -83,7 +116,7 @@ posterior_feasibility<-function(vero_post,trcy_post,si,sj,gi,gj,env){
     for( i in 1:nrow(vero_post)){
       
       #we get the corresponding posterior values, vero first, trcy second, gi (vero), gj(trcy)
-      alpha  <- alpha_matrix(vero_post[i,],trcy_post[i,],gi,gj,env)
+      alpha  <- alpha_matrix(vero_row=vero_post[i,],trcy_row =trcy_post[i,],gi=gi,gj=gj,env=env)
  
       if(env){
         r1 <- vero_post$env_growth[i]
@@ -116,18 +149,19 @@ posterior_feasibility<-function(vero_post,trcy_post,si,sj,gi,gj,env){
 }
 
 ## function that warps the previous function to spit a data frame that has the posterior parameter values, as well as the omega values, theta values and feasibility for each row of the posterior. 
-feasibility_wrapper<-function(vero_model,vero_function, vero_exp,trcy_model,trcy_function,trcy_exp,env){
+feasibility_wrapper<-function(vero_model,vero_function, vero_exp,vero_name,trcy_model,trcy_function,trcy_exp,trcy_name,env){
   gi<-.372
   si<-.556
   gj<-.258
   sj<-.033
   
   
-  vero_post<- posterior_parameters(vero_model, fun = vero_function, si, gi, exp_param = vero_exp)
-  trcy_post<- posterior_parameters(trcy_model, fun= trcy_function, sj,  gj, exp_param = trcy_exp)
+  vero_post<- posterior_parameters(model = vero_model, growth_fun = vero_function,s = si,g = gi,exp_param = vero_exp)
+  trcy_post<- posterior_parameters(model = trcy_model, growth_fun = trcy_function,s = sj,g  = gj, exp_param = trcy_exp) 
   
-  post <- posterior_feasibility(vero_post, trcy_post,si,sj,gi,gj, env = env)
-  
+  post <- posterior_feasibility(vero_post = vero_post,trcy_post = trcy_post,gi = gi,gj = gj,env = env)
+  post$vero_model <- vero_name
+  post$trcy_model <- trcy_name
   return(post)
 }
 

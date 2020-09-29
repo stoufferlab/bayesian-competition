@@ -14,6 +14,21 @@ list2env(all_models , envir = .GlobalEnv)
 #we remove what we do not want
 rm(all_models, files)
 
+
+#we add a name to each model
+vero_bh_multispecies_poisson.rds$name<-"Beverton-Holt"
+vero_lv_multispecies_poisson.rds$name<- "Lotka-Volterra"
+vero_rc_multispecies_poisson.rds$name<- "Ricker"
+vero_hs_multispecies_poisson.rds$name<- "Hassell"
+
+
+trcy_bh_multispecies_poisson.rds$name<-"Beverton-Holt"
+trcy_lv_multispecies_poisson.rds$name<- "Lotka-Volterra"
+trcy_rc_multispecies_poisson.rds$name<- "Ricker"
+trcy_hs_multispecies_poisson.rds$name<- "Hassell"
+
+
+
 #we leave
 setwd("..")
 print(getwd())

@@ -3,7 +3,7 @@ library(ggplot2)
 library(ggpubr)
 
 #We source everything known to human kind...
-source("code/growth_rates.R")
+
 source("code/gg_theme.R")
 source("code/read_models.R")
 source("code/model_toolbox.R")
@@ -18,38 +18,15 @@ sj<-.033
 
 
 #A function that returns a data frame with posterior equilibrium values ofr each models
-#modesl is a list of models of the same species
-#names is the names of each model, IN THE SAME ORDER as in the list models
-#growth functions are the growth functions of each model, in the same order as in the list models
-#s and g are the respective survival and germination of each species
-multiple_equilibriums <-
-  function(models,
-           model_names,
-           growth_fucntions,
-           s,
-           g) {
-    all_posteriors <- data.frame()
-    
-    
-    for (i in 1:length(models)) {
-      if (model_names[i] == "Hassell") {
-        exp_param = TRUE
-      } else{
-        exp_param = FALSE
-      }
-      posterior <-
-        posterior_parameters(
-          model = models[[i]],
-          growth_fun = growth_fucntions[[i]],
-          s = s,
-          g = g,
-          exp_param = exp_param
-        )
-      posterior$model <- model_names[i]
-      all_posteriors <- rbind(all_posteriors, posterior)
-    }
-    
-  return(all_posteriors)
+
+multiple_equilibriums <-function(..., s,g) {
+   
+    models <- list(...)
+    posteriors <- lapply(models, function(m) {
+      one_posterior <- posterior_parameters(m,s,g)
+      return(one_posterior)
+    })
+    all_posteriors <- do.call(rbind, posteriors)
     
   }
 
@@ -58,34 +35,23 @@ multiple_equilibriums <-
 
 #This is the order : beverton holt (bh), lotka volterra (lv), ricker (rc) and hassell (hs)
 model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker", "Hassell")
-growth_functions <- list(bh_growth, lv_growth, rc_growth, hs_growth)
-
-
-vero_models <-list(vero_bh_multispecies_poisson.rds,
-                   vero_lv_multispecies_poisson.rds,
-                   vero_rc_multispecies_poisson.rds,
-                   vero_hs_multispecies_poisson.rds)
-
-trcy_models<-list(trcy_bh_multispecies_poisson.rds,
-                  trcy_lv_multispecies_poisson.rds,
-                  trcy_rc_multispecies_poisson.rds,
-                  trcy_hs_multispecies_poisson.rds)
-
 
 
 vero <- multiple_equilibriums(
-  models = vero_models,
-  model_names = model_names,
-  growth_fucntions = growth_functions,
+  vero_bh_multispecies_poisson.rds,
+  vero_lv_multispecies_poisson.rds,
+  vero_rc_multispecies_poisson.rds,
+  vero_hs_multispecies_poisson.rds,
   s = si,
   g = gi
 )
 
 
 trcy <- multiple_equilibriums(
-  models = trcy_models,
-  model_names = model_names,
-  growth_fucntions = growth_functions,
+  trcy_bh_multispecies_poisson.rds,
+  trcy_lv_multispecies_poisson.rds,
+  trcy_rc_multispecies_poisson.rds,
+  trcy_hs_multispecies_poisson.rds,
   s = sj,
   g = gj
 )

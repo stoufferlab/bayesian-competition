@@ -8,15 +8,11 @@ source("code/feasibility_toolbox.R")
 
 
 #function to generate a posterior growth rate (and an environmental growth rate) for each point of the posterior, for one model. exp_param is binary that tells it if to take into consideration if the model has an exponential parameter
-posterior_parameters <- function(
-           model,
-           growth_fun,
-           s,
-           g) {
+posterior_parameters <- function(model,s,g) {
 
     # extract samples from the model posterior for all parameters
-    # note: the robust=TRUE does not appear in the function help and may do NOTHING
-    post        <- posterior_samples(model, robust=TRUE)
+
+    post        <- posterior_samples(model)
 
     # the lambda parameter is in log space and needs transformation
     lambda      <- exp(post$b_lambda_Intercept)
@@ -29,36 +25,47 @@ posterior_parameters <- function(
     # interspecific alphas in control and treatment conditions
     alphaij     <- post$b_alphaij_Intercept
     alphaij_env <- post$b_alphaij_Intercept + post$b_alphaij_env
-
+    
     # some models and hence "growth rates" include additional parameters
     if("beta" %in% names(model$formula$pforms)) {
-      b     <- exp(post$b_beta_Intercept)
-      b_env <- exp(post$b_beta_Intercept + post$b_beta_env)
+      beta     <- exp(post$b_beta_Intercept)
+      beta_env <- exp(post$b_beta_Intercept + post$b_beta_env)
     }else{
-      b     <- NULL
-      b_env <- NULL
+      beta     <- NA
+      beta_env <- NA
     }
-
-    # implied growth rate in control conditions
-    growth      <- growth_fun(
-      s = s,
-      g = g,
-      lambda = lambda,
-      b_param = b
-    )
-
-    # implied growth rate in treatment conditions
-    env_growth  <- growth_fun(
-      s = s,
-      g = g,
-      lambda = lambda_env,
-      b_param = b_env
-    )
-
+    
+    #These definitions are true for all models
+    a <- lambda*g
+    a_env <- lambda_env*g
+    b <- 1 - ((1-g)*s)
+    
+    #to calculate different growth rates based on the model we define growth based on the name of the model
+    if (model$name=="Beverton-Holt"){
+      growth <- (a/b) - 1
+      env_growth <- (a_env/b) - 1
+    }
+    
+    if(model$name=="Lotka-Volterra"){
+      growth <- 1 - (b/a) 
+      env_growth <- 1 - (b/a_env)
+    }
+    
+    if(model$name =="Ricker"){
+      growth <- log(a/b)
+      env_growth <- log(a_env/b)
+    }
+    
+    if(model$name=="Hassell"){
+      growth <- -1 + ((a/b)^(1/b))
+      env_growth <-   -1 + ((a_env/b)^(1/b_env))
+    }
+    
+    
     # calculate single-species equilibrium densities in control and treatment conditions
     equilibrium <- growth/(alphaii*g)
     env_equilibrium <- env_growth/(alphaii_env*g)
-
+    
     # create a posterior sample of "more interpretable" model parameters
     posterior <-
       as.data.frame(
@@ -75,21 +82,24 @@ posterior_parameters <- function(
           env_equilibrium
         )
       )
-
-    # add in the beta parameter if it exists (for completeness)
-    if("beta" %in% names(model$formula$pforms)) {
-      posterior$b     <- exp(post$b_beta_Intercept)
-      posterior$b_env <- exp(post$b_beta_Intercept + post$b_beta_env)
-    }
-
+    
+         
+    
+     #because to rbind things they need to have the same number of columsn
+      posterior$b     <- beta
+      posterior$b_env <- beta_env
+    
+    
     # add in the other alpha parameter if it exists (for completeness)
     if("alphaik" %in% names(model$formula$pforms)) {
       posterior$alphaik     <- post$b_alphaii_Intercept
       posterior$alphaik_env <- post$b_alphaii_Intercept + post$b_alphaii_env
     }
-
+    
+    # add the model name to always be sure 
+    posterior$model <- model$name
     return(posterior)
-  }
+}
 
 
 #function to generate an alpha matrix based on one row of the posterior for each species. env is a binary that tells it if to take into consideration the environmental values of alpha

@@ -3,25 +3,35 @@
 
 
 
-model_compare<-function(...){
-   models <- list(...)
-   waic_value <- c()
-   looic_value <-c()
-   
-   for(i in 1:length(models)){
-     w <- waic(models[[i]])
-     wa <- w$waic
-     waic_value[i] <-wa
-     
-     l <- loo(models[[i]])
-     lo <- l$looic
-     looic_value[i] <-lo
-   }
+model_compare <- function(..., sort.by = "waic"){
+  models <- list(...)
+  
+  # print a warning if only one model is supplied
+  if (length(models) == 1) {
+    warning("Only one model is supplied. Comparing one model is not meaningful.")
+  }
+  
+  # switching to lapply from for-loop
+  ic <- lapply(models, function(m) {
+    w <- waic(m)
+    wa <- w$estimates["waic", "Estimate"]  # in newer brms access with "estimate", switch back to $waic if you're still using older brms
+    
+    l <- loo(m)
+    lo <- l$estimates["looic", "Estimate"]
+    
+    return(c(waic = wa, looic = lo))
+  })
+  ic <- do.call(rbind, ic)
   
   waic_weights <- model_weights(..., weights = "waic")
   loo_weights <- model_weights(..., weights = "loo")
-  out <- cbind(waic_value, waic_weights, looic_value, loo_weights)
-  out <- out[order(waic_weights),]
+  
+  out <-
+    cbind(waic = ic[, "waic"],
+          waic_weights,
+          looic = ic[, "looic"],
+          loo_weights)
+  out <- out[order(out[, sort.by]),]  # sort.by can be alternatively "looic" now
   return(out)
   
 }

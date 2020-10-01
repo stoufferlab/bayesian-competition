@@ -13,9 +13,11 @@ theme_alba<- theme(#legend.title = element_text(size = 12),
                               colour = "grey20"),
   panel.grid = element_line(colour = "white"),
   panel.grid.minor = element_line(size = rel(0.5)),
-  strip.background = element_rect(fill = "grey85",
+  strip.background = element_rect(fill = "white",
                                   colour = "grey20"),
   legend.key = element_rect(fill = "white",
-                            colour = NA))
+                            colour = NA),
+  strip.text.x = element_text(size = 12, colour = "black"),
+  strip.text.y = element_text(size = 12, colour = "black"))
 
 palette_alba<-ggpubr::get_palette(palette = "YlGn",k=16)[c(7,10,13,16)]

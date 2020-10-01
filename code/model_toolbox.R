@@ -1,17 +1,93 @@
-#toolbox for example BEV competition
-require(brms)
-source("code/feasibility_toolbox.R")
 
 
+# function to extract the main effects of a model fit
+fixed_model<-function(model){
+  model_coef<-fixef(model)
+  coef<-as.matrix(model_coef[,1])
+  coef<-t(coef)
+  params<-as.data.frame(coef)
+  return(params)
+}
+
+#function to get the growth rate of a model, based on the mean parameter values. The model fit should have a name within, hopefully you have that when you read the model in a scipt!
+get_fixed_growth<- function(model,s,g,env){
+ 
+   params <- fixed_model(model)
+  lambda <- exp(params$lambda_Intercept)
+  lambda_env <- exp(params$lambda_Intercept + params$lambda_env)
+  
+  a <- lambda*g
+  a_env <- lambda_env*g
+  b <- 1 - ((1-g)*s)
+  if("beta" %in% names(model$formula$pforms)) {
+    beta     <- exp(params$beta_Intercept)
+    beta_env <- exp(params$beta_Intercept + params$beta_env)
+  }else{
+    beta     <- NA
+    beta_env <- NA
+  }
+  #to calculate different growth rates based on the model we define growth based on the name of the model
+  if (model$name=="Beverton-Holt"){
+     growth <- (a/b) - 1
+     env_growth <- (a_env/b) - 1
+   }
+  
 
 
+   if(model$name=="Lotka-Volterra"){
+     growth <- 1 - (b/a)
+     env_growth <- 1 - (b/a_env)
+   }
+  
+   if(model$name =="Ricker"){
+     growth <- log(a/b)
+     env_growth <- log(a_env/b)
+   }
+  
+   if(model$name=="Hassell"){
+     growth <- -1 + ((a/b)^(1/beta))
+     env_growth <-   -1 + ((a_env/b)^(1/beta_env))
+   }
+  
+  if(env){
+    return(env_growth)
+  } else{
+    return(growth)
+  } 
+    }
+
+#function to extract thealpha matrix based on two models, for the mean parameter values, env is a binary to tell it to take into consideration parameter values assosiated with the woody environment to calculate growth
+get_fixed_alphas<-function(vero_model,gi,trcy_model,gj, env){
+  vero<-fixed_model(vero_model)
+  trcy<-fixed_model(trcy_model)
+  
+  if(env){
+    
+    a11<-vero$alphaii_Intercept + vero$alphaii_env
+    a21<-trcy$alphaij_Intercept + trcy$alphaij_env
+    a12<-vero$alphaij_Intercept + vero$alphaij_env
+    a22<-trcy$alphaii_Intercept + trcy$alphaii_env
+    
+    alpha<-matrix( c(a11,a21,a12,a22) ,ncol=2,nrow=2) 
+    alpha<- sweep (alpha,MARGIN=2,STAT=c(gi,gj),FUN="*")
+  }else{
+    a11<-vero$alphaii_Intercept
+    a21<-trcy$alphaij_Intercept
+    a12<-vero$alphaij_Intercept
+    a22<-trcy$alphaii_Intercept
+    
+    alpha<-matrix( c(a11,a21,a12,a22) ,ncol=2,nrow=2) 
+    alpha<- sweep (alpha,MARGIN=2,STAT=c(gi,gj),FUN="*") 
+  }
+  
+  return(alpha)
+}
 
 
-#function to generate a posterior growth rate (and an environmental growth rate) for each point of the posterior, for one model. exp_param is binary that tells it if to take into consideration if the model has an exponential parameter
+#function to generate a posterior growth rate (and an environmental growth rate) for each point of the posterior, for one model. s and g are the seed survival and germination rates. Model is the brms model fit. It spits out the posterior parameters, the posterior growth and environmental growth and equilibrium abundances and environmental equilibrium abundances
 posterior_parameters <- function(model,s,g) {
 
     # extract samples from the model posterior for all parameters
-
     post        <- posterior_samples(model)
 
     # the lambda parameter is in log space and needs transformation
@@ -57,8 +133,8 @@ posterior_parameters <- function(model,s,g) {
     }
     
     if(model$name=="Hassell"){
-      growth <- -1 + ((a/b)^(1/b))
-      env_growth <-   -1 + ((a_env/b)^(1/b_env))
+      growth <- -1 + ((a/b)^(1/beta))
+      env_growth <-   -1 + ((a_env/b)^(1/beta_env))
     }
     
     
@@ -83,11 +159,11 @@ posterior_parameters <- function(model,s,g) {
         )
       )
     
-         
     
-     #because to rbind things they need to have the same number of columsn
-      posterior$b     <- beta
-      posterior$b_env <- beta_env
+    
+    #because to rbind things later on  they need to have the same number of columsn
+    posterior$b     <- beta
+    posterior$b_env <- beta_env
     
     
     # add in the other alpha parameter if it exists (for completeness)
@@ -130,7 +206,35 @@ alpha_matrix <- function(vero_row, trcy_row, gi,gj, env){
 
 
 #function that spits out an omega, feasibility and theta calculated from the posterior of two models. env is a binary that tells it if to take iinto consideration the environmental variables
-posterior_feasibility<-function(vero_post,trcy_post,gi,gj,env){
+posterior_feasibility<-function(vero_model,trcy_model,si,gi,sj,gj,env){
+  
+  #for the mean omega and theta we get the  alpha matrix for mean parameter values
+  #for an environmental condition
+  mean_alpha_matrix <- get_fixed_alphas(vero_model = vero_model,
+                                        trcy_model = trcy_model,
+                                        gi = gi,
+                                        gj = gj,
+                                        env = env)
+  #as well as r1
+  vero_growth <- get_fixed_growth(model = vero_model,
+                                  s =si,
+                                  g =gi, 
+                                  env = env)
+  
+  #and r2
+  trcy_growth <- get_fixed_growth( model = trcy_model,
+                                   s = sj,
+                                   g = gj,
+                                   env =env)
+  
+  #and now we can calculate the mean
+  
+  Omega_mean <- Omega(mean_alpha_matrix)
+  Theta_mean <- theta(mean_alpha_matrix, c(vero_growth, trcy_growth))
+  
+  # for the posterior feasibility
+  trcy_post<-posterior_parameters(model = trcy_model, s = sj,g = gj)
+  vero_post<-posterior_parameters(model = vero_model, s = si, g = gi)
   
   num_posterior<- identical(nrow(vero_post),nrow(trcy_post))
   if(num_posterior){
@@ -144,7 +248,7 @@ posterior_feasibility<-function(vero_post,trcy_post,gi,gj,env){
       
       #we get the corresponding posterior values, vero first, trcy second, gi (vero), gj(trcy)
       alpha  <- alpha_matrix(vero_row=vero_post[i,],trcy_row =trcy_post[i,],gi=gi,gj=gj,env=env)
- 
+      
       if(env){
         r1 <- vero_post$env_growth[i]
         r2 <- trcy_post$env_growth[i]
@@ -153,7 +257,7 @@ posterior_feasibility<-function(vero_post,trcy_post,gi,gj,env){
         r2 <- trcy_post$growth[i]
       }
       
- 
+      
       #And estimate the feasability domain
       omega       <-Omega(alpha)
       feasibility <-test_feasibility(alpha,c(r1,r2))
@@ -166,31 +270,18 @@ posterior_feasibility<-function(vero_post,trcy_post,gi,gj,env){
     }
     
     
-    pp<- cbind(omega_results,feasibility_results,theta_results)
+    pp<- as.data.frame(cbind(omega_results,feasibility_results,theta_results))
+    pp$Omega_mean <- Omega_mean
+    pp$Theta_mean <- Theta_mean
     
-    pp<-as.data.frame(pp)
+    pp$vero_model <- vero_model$name
+    pp$trcy_model <- trcy_model$name
     return(pp)
   }else{warning("Posterior distributions are not the same length")}
   
   
 }
 
-## function that warps the previous function to spit a data frame that has the posterior parameter values, as well as the omega values, theta values and feasibility for each row of the posterior. 
-feasibility_wrapper<-function(vero_model,vero_function, vero_exp,vero_name,trcy_model,trcy_function,trcy_exp,trcy_name,env){
-  gi<-.372
-  si<-.556
-  gj<-.258
-  sj<-.033
-  
-  
-  vero_post<- posterior_parameters(model = vero_model, growth_fun = vero_function,s = si,g = gi,exp_param = vero_exp)
-  trcy_post<- posterior_parameters(model = trcy_model, growth_fun = trcy_function,s = sj,g  = gj, exp_param = trcy_exp) 
-  
-  post <- posterior_feasibility(vero_post = vero_post,trcy_post = trcy_post,gi = gi,gj = gj,env = env)
-  post$vero_model <- vero_name
-  post$trcy_model <- trcy_name
-  return(post)
-}
 
 
 

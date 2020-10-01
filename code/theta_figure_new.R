@@ -20,13 +20,11 @@ sj<-.033
 # the list of models over to iterate
 vero_models <- list( vero_bh_multispecies_poisson.rds,
                      vero_lv_multispecies_poisson.rds,
-                     vero_rc_multispecies_poisson.rds,
-                     vero_hs_multispecies_poisson.rds)
+                     vero_rc_multispecies_poisson.rds)
 
 trcy_models<- list(trcy_bh_multispecies_poisson.rds,
                    trcy_lv_multispecies_poisson.rds,
-                   trcy_rc_multispecies_poisson.rds,
-                   trcy_hs_multispecies_poisson.rds)
+                   trcy_rc_multispecies_poisson.rds)
 
 model_grid_sunny<- combined_models(vero_models = vero_models,
                        trcy_models = trcy_models,
@@ -48,7 +46,7 @@ model_grid_woody<- combined_models(vero_models = vero_models,
 
 
 
-model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker", "Hassell")
+model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker")
 
 model_grid_sunny$vero_model <- factor(model_grid_sunny$vero_model, levels = model_names)
 model_grid_sunny$trcy_model <- factor(model_grid_sunny$trcy_model, levels = model_names)
@@ -77,6 +75,9 @@ feasibility_plot_sunny<-ggplot(model_grid_sunny) +
   ), col= "goldenrod3") +
   theme_alba +
   scale_color_manual(values = c(col2, col1)) +
+  geom_abline(slope = 180, intercept = 0, col="grey50")+
+  xlim(0,0.3)+
+  ylim(0, 60)+
   facet_grid(trcy_model~vero_model)
 
 
@@ -96,7 +97,10 @@ feasibility_plot_woody<-ggplot(model_grid_woody) +
   ), col= "goldenrod1")+
   theme_alba +
   scale_color_manual(values = c(col2, col1)) +
-  facet_grid(trcy_model~vero_model)
+  xlim(0,0.3)+
+  ylim(0,60)+
+  facet_grid(trcy_model~vero_model)+
+  geom_abline(slope = 180, intercept = 0, col="grey50")
 
 
 #we save it where the manuscript lives

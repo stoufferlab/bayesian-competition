@@ -63,7 +63,7 @@ vero$model<-factor(vero$model, levels= model_names)
   
 vero_0<-ggplot(vero) +
   geom_density(mapping = aes(x = equilibrium, fill = model, linetype=model) ,
-               alpha = 0.8, show.legend = TRUE) +
+               alpha = 0.8, show.legend = FALSE) +
   scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
   scale_fill_manual(values=palette_alba)+
   theme_alba+
@@ -84,7 +84,7 @@ trcy_0<-ggplot(trcy) +
 
 vero_1<-ggplot(vero) +
   geom_density(mapping = aes(x = env_equilibrium, fill = model, linetype=model) ,
-               alpha = 0.8,show.legend = TRUE) +
+               alpha = 0.8,show.legend = FALSE) +
   scale_fill_manual(values=palette_alba) +
   theme_alba +
   xlim(0,1500)+
@@ -93,7 +93,7 @@ vero_1<-ggplot(vero) +
 
 trcy_1<-ggplot(trcy) +
   geom_density(mapping = aes(x = env_equilibrium, fill = model, linetype=model) ,
-               alpha = 0.8, show.legend = FALSE) +
+               alpha = 0.8, show.legend = TRUE) +
   scale_fill_manual(values=palette_alba)+
   theme_alba + 
   xlim(0,1500) +
@@ -106,16 +106,19 @@ trcy_1<-ggplot(trcy) +
 
 
 all_figures<-ggarrange( vero_0, trcy_0 ,
-          labels = c("A", "B"),
-          ncol = 1, nrow = 2)
+                        vero_1, trcy_1,
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2)
+
+# 
+# env_figures<-ggarrange( vero_1, trcy_1 ,
+#                         labels = c("A", "B"),
+#                         ncol = 1, nrow = 2)
+# 
 
 
-env_figures<-ggarrange( vero_1, trcy_1 ,
-                        labels = c("A", "B"),
-                        ncol = 1, nrow = 2)
-
-
-pdf(file = "results/equilibrium.pdf", width = 6, height = 7.5/1.6)
+setwd("/home/alba/bayesian_competiton_ms")
+pdf(file = "equilibrium.pdf", width = 7, height = 7/1.6)
 annotate_figure(all_figures,
              
                 bottom = text_grob("Monoculture equilibrium abundance",
@@ -126,17 +129,17 @@ annotate_figure(all_figures,
  
 dev.off()
 
+setwd("/home/alba/bayesian-competition")
 
-
-
-
-pdf(file = "results/env_equilibrium.pdf", width = 6, height = 7.5/1.6)
-annotate_figure(env_figures,
-                
-                bottom = text_grob("Monoculture equilibrium abundance",
-                                   size = 14),
-                left = text_grob("Density",  rot = 90, size = 14),
-                
-)
-
-dev.off()
+# 
+# 
+# pdf(file = "results/env_equilibrium.pdf", width = 6, height = 7.5/1.6)
+# annotate_figure(env_figures,
+#                 
+#                 bottom = text_grob("Monoculture equilibrium abundance",
+#                                    size = 14),
+#                 left = text_grob("Density",  rot = 90, size = 14),
+#                 
+# )
+# 
+# dev.off()

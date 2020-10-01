@@ -4,10 +4,11 @@ require(mvtnorm)
  Omega <- function(alpha){
    n <- nrow(alpha)
    Sigma <-solve(t(alpha) %*% alpha, tol =  1.88129e-25 )
+   #calculate the prob density
    d <- pmvnorm(lower = rep(0,n), upper = rep(Inf,n), mean = rep(0,n), sigma = Sigma)
-   out <- log10(d[1]) + n * log10(2)
-  return( d[1]^(1 / n))
-  
+   #out <- log10(d[1]) + n * log10(2)
+  # return( d[1]^(1 / n))
+  return(d)
  }
 
 
@@ -27,7 +28,9 @@ theta <- function(alpha,r){
   out <- acos(sum(r_c*r)/(sqrt(sum(r^2))*sqrt(sum(r_c^2))))*180/pi
   return(out)
 }
+
+
 test_feasibility <- function(alpha,r){
-  out <- prod(solve(alpha,r)>0)
+  out <- all(solve(alpha,r)>0)
   return(out)
 }

@@ -227,27 +227,56 @@ posterior_feasibility<-function(vero_model,trcy_model,si,gi,sj,gj,env){
                                    g = gj,
                                    env =env)
   
-  #and now we can calculate the mean
+  #and now we can calculate the mean feasibility without constraints
   
-  Omega_mean <- Omega(mean_alpha_matrix)
-  Theta_mean <- theta(mean_alpha_matrix, c(vero_growth, trcy_growth))
+  omega_mean <- Omega(mean_alpha_matrix)
+  r_centroid_mean<- r_centroid(mean_alpha_matrix)
+  theta_mean <- theta(r_c = r_centroid_mean ,
+                      r = c(vero_growth, trcy_growth))
   
+ # Each model has its own constraints
+ constraints<- list(vero_model$constraints, trcy_model$constraints)
+   
+ # And we calculate the constrained mean values
+  constrained_domain_mean<- calculate_constrained_domain(alpha=mean_alpha_matrix,
+                                                         constraints = constraints)
+ 
+ omega_prime_mean<- constrained_domain_mean[1]
+ #the centroid is the mean of the coordinates of feasible growth rates
+ r_centroid_mean_prime<- prime_values_mean[2:3]
+ # we calculate how far away is our vector of growth rates from this centroid
+ theta_mean_prime<- theta(r_c=r_centroid_mean_prime, 
+                          r=c(vero_growth,trcy_growth))
+ 
+ 
   # for the posterior feasibility
-  trcy_post<-posterior_parameters(model = trcy_model, s = sj,g = gj)
-  vero_post<-posterior_parameters(model = vero_model, s = si, g = gi)
+  trcy_post<-posterior_parameters(model = trcy_model, 
+                                  s = sj,
+                                  g = gj)
+  vero_post<-posterior_parameters(model = vero_model,
+                                  s = si,
+                                  g = gi)
   
   num_posterior<- identical(nrow(vero_post),nrow(trcy_post))
   if(num_posterior){
     
+    #The omegas
     omega_results       <-c()
+    omega_prime_results <-c()
+    
     feasibility_results <-c()
     growth_results      <-c()
     theta_results       <-c()
+    proportion_results <-c()
+    omega_prime_results <-c()
     
     for( i in 1:nrow(vero_post)){
       
       #we get the corresponding posterior values, vero first, trcy second, gi (vero), gj(trcy)
-      alpha  <- alpha_matrix(vero_row=vero_post[i,],trcy_row =trcy_post[i,],gi=gi,gj=gj,env=env)
+      alpha  <- alpha_matrix(vero_row=vero_post[i,],trcy_row =trcy_post[i,],
+                             gi=gi,
+                             gj=gj,
+                             env=env)
       
       if(env){
         r1 <- vero_post$env_growth[i]
@@ -257,22 +286,32 @@ posterior_feasibility<-function(vero_model,trcy_model,si,gi,sj,gj,env){
         r2 <- trcy_post$growth[i]
       }
       
-      
-      #And estimate the feasability domain
+    
+      #And estimate the feasability domain unconstrained
       omega       <-Omega(alpha)
-      feasibility <-test_feasibility(alpha,c(r1,r2))
-      theta       <-theta(alpha,c(r1,r2))
+      centroid    <- r_centroid(alpha)
+      theta       <-theta(centroid,c(r1,r2))
+      #And constrainded
+      constrained_domain_post<- calculate_constrained_domain(alpha= alpha,
+                                                             constraints = constraints)
+      
+      
+      
       
       # #we save it 
       omega_results       <-c(omega_results,omega)
       feasibility_results <-c(feasibility_results, feasibility)
       theta_results       <-c(theta_results,theta)
+      proportion_results  <-c(proportion_results, proportion)
+      omega_prime_results <- c(omega_prime_results, omega_prime)
     }
     
     
-    pp<- as.data.frame(cbind(omega_results,feasibility_results,theta_results))
+    pp<- as.data.frame(cbind(omega_results,feasibility_results,theta_results, proportion_results, omega_prime_results))
     pp$Omega_mean <- Omega_mean
     pp$Theta_mean <- Theta_mean
+    pp$proportion_mean <- proportion_mean
+    pp$Omega_prime_mean <- Omega_prime_mean
     
     pp$vero_model <- vero_model$name
     pp$trcy_model <- trcy_model$name
@@ -281,7 +320,3 @@ posterior_feasibility<-function(vero_model,trcy_model,si,gi,sj,gj,env){
   
   
 }
-
-
-
-

@@ -20,11 +20,13 @@ sj<-.033
 # the list of models over to iterate
 vero_models <- list( vero_bh_multispecies_poisson.rds,
                      vero_lv_multispecies_poisson.rds,
-                     vero_rc_multispecies_poisson.rds)
+                     vero_rc_multispecies_poisson.rds,
+                     vero_hs_multispecies_poisson.rds)
 
 trcy_models<- list(trcy_bh_multispecies_poisson.rds,
                    trcy_lv_multispecies_poisson.rds,
-                   trcy_rc_multispecies_poisson.rds)
+                   trcy_rc_multispecies_poisson.rds,
+                   trcy_hs_multispecies_poisson.rds)
 
 model_grid_sunny<- combined_models(vero_models = vero_models,
                        trcy_models = trcy_models,
@@ -46,7 +48,7 @@ model_grid_woody<- combined_models(vero_models = vero_models,
 
 
 
-model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker")
+model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker", "Hassell")
 
 model_grid_sunny$vero_model <- factor(model_grid_sunny$vero_model, levels = model_names)
 model_grid_sunny$trcy_model <- factor(model_grid_sunny$trcy_model, levels = model_names)

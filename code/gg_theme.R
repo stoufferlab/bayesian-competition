@@ -2,8 +2,8 @@ require(ggpubr)
 require(ggplot2)
 
 theme_alba<- theme(#legend.title = element_text(size = 12),
-  legend.text = element_text(size = 10),
-  legend.position = c(0.850, 0.65),
+  legend.text = element_text(size = 8),
+  legend.position = c(0.850, 0.5),
   axis.title.x = element_blank(),
   axis.title.y = element_blank(),
   text = element_text(size = 10),

@@ -75,6 +75,7 @@ vero_0<-ggplot(vero) +
 trcy_0<-ggplot(trcy) +
   geom_density(mapping = aes(x = equilibrium, fill = model, linetype=model) ,
                alpha = 0.8, show.legend = FALSE) +
+  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
   scale_fill_manual(values=palette_alba)+
   theme_alba +
   xlim(0,400)+
@@ -85,6 +86,7 @@ trcy_0<-ggplot(trcy) +
 vero_1<-ggplot(vero) +
   geom_density(mapping = aes(x = env_equilibrium, fill = model, linetype=model) ,
                alpha = 0.8,show.legend = FALSE) +
+  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
   scale_fill_manual(values=palette_alba) +
   theme_alba +
   xlim(0,1500)+
@@ -94,6 +96,7 @@ vero_1<-ggplot(vero) +
 trcy_1<-ggplot(trcy) +
   geom_density(mapping = aes(x = env_equilibrium, fill = model, linetype=model) ,
                alpha = 0.8, show.legend = TRUE) +
+  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
   scale_fill_manual(values=palette_alba)+
   theme_alba + 
   xlim(0,1500) +

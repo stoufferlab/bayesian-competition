@@ -1,7 +1,9 @@
 library(cubature)
 library(Gmedian)
 
-#Checks if a particular combination of growth rates, inside  a Radius, is feasible with the interaction matrix and constraints
+
+###Functions to calculate the feasibility domain, its center, and if our calculated growth rates are feasible
+#Checks if a particular combination of growth rates,  a Radius, is feasible with the interaction matrix and constraints
 feasibility <- function(ri,alpha,R,branch=c("plus","minus"),rconstraints=NULL,Nupper=NULL){
   # growth rates are on a circle of radius R so given one we can determine the other
   rj <- switch(branch,
@@ -36,6 +38,9 @@ feasibility <- function(ri,alpha,R,branch=c("plus","minus"),rconstraints=NULL,Nu
 #perform integration using the function above to determine the size of the feasibility domain
 #For a particular R, it performs the integration of feasibility over its volume, returns normalized omega
 omega <- function(R,alpha,rconstraints=NULL,Nupper=NULL){
+  
+  
+  
   # calculate the "plus" branch of the integral for the alpha matrix
   omega_plus <- adaptIntegrate(
     feasibility,
@@ -67,7 +72,7 @@ omega <- function(R,alpha,rconstraints=NULL,Nupper=NULL){
   return(omega)
 }
 
-#Calculate Omega for different values of R
+#Visualize how omega changes with different values of Radius (R_vals) given constraints
 omega_radius<-function(R_vals, alpha,rconstraints=NULL, Nupper=NULL){
 
   
@@ -84,9 +89,24 @@ omega_radius<-function(R_vals, alpha,rconstraints=NULL, Nupper=NULL){
   return(data.frame("R"=R_vals, "Omegas"= omega_vals))
 }
 
-# sample values of R that are feasible
-r_feasible<-function(R_vals,alpha, rconstraints=NULL,Nupper=NULL){
+#Integrate the area of omega, R is the maximum radius expected
+omega_integrate<-function(R, alpha, rconstraints=NULL, Nupper=NULL){
+ 
+   omega_area<- adaptIntegrate(
+    omega,
+    lower=0,
+    upper=R,
+    alpha=alpha,
+    rconstraints=rconstraints,
+    Nupper=Nupper
+  )
+  #we normalize it
+  return(omega_area$integral/100)
+}
 
+# sample values of R that are feasible and get the center of the area
+r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL){
+  R_vals <- seq(0.001,R, 0.01)
   r_sample <- t(sapply(
     seq_len(1000),
     function(x,R_vals,alpha,rconstraints,Nupper){
@@ -127,57 +147,61 @@ r_feasible<-function(R_vals,alpha, rconstraints=NULL,Nupper=NULL){
 
   # compute and plot the median vector (which appears to end up a bit short for some reason)
   medianR <- Gmedian(r_sample[,c("ri","rj")])
-  segments(0,0,medianR[1],medianR[2],lwd=2,col="aquamarine4")
+  points(medianR[1],medianR[2],pch=20,col="aquamarine4")
   
   return(r_sample)
 }
-
-feasibility_wrapper<-function(max_R, alpha, rconstraints=NULL, Nupper=NULL){
-  R_vals <- seq(0.0001, max_R, length.out = 100)
-  #we calculate omega values for different values of R
-  #R_vals <- c(0.0001,1:100)
-  omega_values <- omega_radius(R_vals = R_vals,
+#Returns Omega and the center of the area
+feasibility_wrapper<-function(R, alpha, rconstraints=NULL, Nupper=NULL){
+  
+  area <- omega_integrate (    R = R,
                                alpha = alpha,
                                rconstraints = rconstraints,
                                Nupper = Nupper)
   #We sample the values of R that are feasible
-  growth_values<- r_feasible(R_vals = R_vals,
+  growth_values<- r_feasible(R = R,
                              alpha = alpha,
                              rconstraints = rconstraints,
                              Nupper = Nupper  )
-  #We average over omega_values to get the mean feasibility domain
-  mean_omega<- apply(omega_values,2,mean)[2]
-  #We get the median of the growth vectors to calculate the centroid
+ 
+  #We get the median of the growth vectors to calculate the center of the area
   
-  r_centroid<- Gmedian(growth_values[,c("ri","rj")])
-  #return(growth_values)
-  return(list("Omega"=mean_omega, "r_centroid"=r_centroid))
+  center<- Gmedian(growth_values[,c("ri","rj")])
+
+  return(list("Omega"=area, "Center"= center))
   
 }
 
+#Check if our growth rates, r,  are feasible given alpha matrix and the constraints
+check_feasibility<-function(r,alpha,rconstraints=NULL, Nupper=NULL){
+  # solve for the equilibrium given the interactions and the growth rate vector
+  N <- solve(alpha) %*% r
+  
+  # check if N corresponds to feasibile equilibrium
+  N_feasible <- (N > 0)
+  
+  # check whether N are within constraints
+  if(!is.null(Nupper)){
+    N_good <- (N <= Nupper)
+  }else{
+    N_good <- rep(TRUE,length(N))
+  }
+  
+  # check whether growth rates are within constraints
+  if(!is.null(rconstraints)){
+    r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
+  }else{
+    r_good <- rep(TRUE,length(r))
+  }
+  
+  return(prod(N_feasible, N_good, r_good))
+  
+}
 
-theta <- function(r_c,r){
-  out <- acos(sum(r_c*r)/(sqrt(sum(r^2))*sqrt(sum(r_c^2))))*180/pi
-  return(out)
+#Calculate the distance from the center 
+calculate_distance<-function(center, r){
+  dist<- sqrt((r[1]- center[1])^2 + (r[2]- center[2])^2)
+  return(dist)
 }
 
 
-alpha <- diag(2)
-alpha[1,2] <- 0.80
-alpha[2,1] <- 0.223
-# are there values of growth rate that we do not wish to consider?
-rconstraints <- list(
-  lower = c(-Inf, -Inf),
-  upper = c( Inf, Inf)
-)
-
-# are there upper bounds on N that we do not consider biologically realistic?
-Nupper <- c(
-  i = Inf,
-  j = Inf
-)
-
-feasibility_wrapper(max_R = 100,
-                    alpha = alpha,
-                    rconstraints = rconstraints,
-                    Nupper = Nupper)

@@ -227,28 +227,14 @@ posterior_feasibility<-function(vero_model,trcy_model,si,gi,sj,gj,env){
                                    g = gj,
                                    env =env)
   
-  #and now we can calculate the mean feasibility without constraints
   
-  omega_mean <- Omega(mean_alpha_matrix)
-  r_centroid_mean<- r_centroid(mean_alpha_matrix)
-  theta_mean <- theta(r_c = r_centroid_mean ,
-                      r = c(vero_growth, trcy_growth))
   
  # Each model has its own constraints
  constraints<- list(vero_model$constraints, trcy_model$constraints)
-   
- # And we calculate the constrained mean values
-  constrained_domain_mean<- calculate_constrained_domain(alpha=mean_alpha_matrix,
-                                                         constraints = constraints)
- 
- omega_prime_mean<- constrained_domain_mean[1]
- #the centroid is the mean of the coordinates of feasible growth rates
- r_centroid_mean_prime<- prime_values_mean[2:3]
- # we calculate how far away is our vector of growth rates from this centroid
- theta_mean_prime<- theta(r_c=r_centroid_mean_prime, 
-                          r=c(vero_growth,trcy_growth))
- 
- 
+ rconstraints <- list(
+   lower = c(vero_model$constraints[1], trcy_model$constraints[1]),
+   upper = c( vero_model$constraints[2], vero_model$constraints[2])
+ )
   # for the posterior feasibility
   trcy_post<-posterior_parameters(model = trcy_model, 
                                   s = sj,

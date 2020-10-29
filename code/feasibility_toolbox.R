@@ -31,40 +31,12 @@ test_feasibility <- function(alpha,r){
   out <- all(solve(alpha,r)>0)
   return(out)
 }
-
-
-
-
-calculate_constrained_domain <- function(alpha, constraints){
-  Nsample <- 1e5
-  no_constraints<- list(c(-1e5,1e5),c(-1e5,1e5))
-  
-  # We sample N number of growth rates when there is no constraints
-  r <- no_constraints %>% 
-    map(~runif(Nsample, min = .[1], max = .[2])) %>% 
-    unlist() %>% 
-    matrix(ncol = Nsample, byrow = TRUE)
-  
-  #We test and save which ones are feasible
-  feasibility <- c()
-  r1 <- c()
-  r2 <- c()
-  for(i in 1:Nsample){
-    
-    feasibility[i] <-test_feasibility(alpha,r[,i])
-    r1[i]<-r[,i][1]
-    r2[i]<-r[,i][2]
-    
+Omega_with_inequality_constraints <- function(alpha, inequality){
+  beta <- alpha
+  for(j in 1:ncol(alpha)){
+    beta[,j] <- -alpha[,j] / (-alpha[,j] %*% inequality)
   }
-  
-  full_domain<-cbind(feasibility,r1,r2) %>% as.data.frame()
-  feasibility_domain <- filter(full_domain, feasibility ==1)
-  
-  #Now we sample the feasibility domain for our constraints
-  feasibility_domain_constrained<- filter(feasibility_domain, constraints[1] & constraints[2] )
-  
-  omega_prime<-sum(feasibility_domain_constrained$feasibility) / Nsample
-  r_centroid_prime<-apply(feasibility_domain_constrained,2,mean)[2:3]
-  return(c(omega_prime, r_centroid_prime))
-  
+  abs(det(beta))
 }
+
+

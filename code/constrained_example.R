@@ -16,10 +16,11 @@ Nupper <- c(
   j = Inf
 )
 #We calculate and plot omega and its center, for an arbitrary R
-feasibility_wrapper( R = 100,
+p<-feasibility_wrapper( R = 100,
                      alpha = alpha,
                      rconstraints = rconstraints,
-                     Nupper = Nupper)
+                     Nupper = Nupper,
+                     plot=TRUE)
 #Lets say this are our calculated growth rates
 pp<-c(26,80)
 points(pp[1],pp[2], pch=20, col="firebrick4")
@@ -40,8 +41,35 @@ rconstraints <- list(
 feasibility_wrapper( R = 100,
                      alpha = alpha,
                      rconstraints = rconstraints,
-                     Nupper = Nupper)
+                     Nupper = Nupper,
+                     plot = TRUE)
 
+pp<-c(26,80)
+points(pp[1],pp[2], pch=20, col="firebrick4")
+#They are no longer feasible!
+check_feasibility(r = pp,
+                  rconstraints = rconstraints,
+                  Nupper = Nupper,
+                  alpha = alpha )
+
+########################### What about constraints on N#############################
+rconstraints <- list(
+  lower = c( -Inf, -Inf),
+  upper = c( Inf, Inf)
+)
+
+# are there upper bounds on N that we do not consider biologically realistic?
+Nupper <- c(
+  i = Inf,
+  j = Inf
+)
+#We calculate and plot omega and its center, for an arbitrary R
+p<-feasibility_wrapper( R = 100,
+                        alpha = alpha,
+                        rconstraints = rconstraints,
+                        Nupper = Nupper,
+                        plot=TRUE)
+#Lets say this are our calculated growth rates
 pp<-c(26,80)
 points(pp[1],pp[2], pch=20, col="firebrick4")
 #We check if they are feasible
@@ -49,5 +77,7 @@ check_feasibility(r = pp,
                   rconstraints = rconstraints,
                   Nupper = Nupper,
                   alpha = alpha )
+
+
 
 

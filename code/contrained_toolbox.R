@@ -2,8 +2,10 @@ library(cubature)
 library(Gmedian)
 
 
-###Functions to calculate the feasibility domain, its center, and if our calculated growth rates are feasible
-#Checks if a particular combination of growth rates,  a Radius, is feasible with the interaction matrix and constraints
+###Functions to calculate the feasibility domain, its center, and if our calculated growth rates are feasible############
+
+
+#Checks if a particular combination of growth rates,given a Radius, is feasible with the interaction matrix and constraints
 feasibility <- function(ri,alpha,R,branch=c("plus","minus"),rconstraints=NULL,Nupper=NULL){
   # growth rates are on a circle of radius R so given one we can determine the other
   rj <- switch(branch,
@@ -36,7 +38,6 @@ feasibility <- function(ri,alpha,R,branch=c("plus","minus"),rconstraints=NULL,Nu
 }
 
 #perform integration using the function above to determine the size of the feasibility domain
-#For a particular R, it performs the integration of feasibility over its volume, returns normalized omega
 omega <- function(R,alpha,rconstraints=NULL,Nupper=NULL){
   
   
@@ -86,7 +87,7 @@ omega_radius<-function(R_vals, alpha,rconstraints=NULL, Nupper=NULL){
   )
   
   plot(R_vals, omega_vals, type='l', xlab=expression(italic(R)), ylab=expression(Omega))
-  return(data.frame("R"=R_vals, "Omegas"= omega_vals))
+  return(data.frame("R"=R_vals, "Omegas"= omega_vals, "Mean_omega"= mean(omega_vals)))
 }
 
 #Integrate the area of omega, R is the maximum radius expected
@@ -104,9 +105,10 @@ omega_integrate<-function(R, alpha, rconstraints=NULL, Nupper=NULL){
   return(omega_area$integral/100)
 }
 
-# sample values of R that are feasible and get the center of the area
-r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL){
+# sample values of R that are feasible and get the center of the area, plot if you want
+r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL, plot=TRUE){
   R_vals <- seq(0.001,R, 0.01)
+  
   r_sample <- t(sapply(
     seq_len(1000),
     function(x,R_vals,alpha,rconstraints,Nupper){
@@ -129,30 +131,41 @@ r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL){
     rconstraints=rconstraints,
     Nupper=Nupper
   ))
-  plot(0,0,
-       xlim=c(-range(R_vals)[2],range(R_vals)[2]),
-       ylim=c(-range(R_vals)[2],range(R_vals)[2]),
-       type='n',
-       xlab=expression(italic(r[i])),
-       ylab=expression(italic(r[j]))
-  )
-  abline(h=0,lty='dashed',lwd=1.5)
-  abline(v=0,lty='dashed',lwd=1.5)
-  apply(r_sample, MARGIN=1,
-        function(x) {
-          segments(0,0,x["ri"],x["rj"],col=grey(0.75))
-        }
-  )
   
-
-  # compute and plot the median vector (which appears to end up a bit short for some reason)
-  medianR <- Gmedian(r_sample[,c("ri","rj")])
-  points(medianR[1],medianR[2],pch=20,col="aquamarine4")
+  if(plot==TRUE){
+    plot(0,0,
+         xlim=c(-range(R_vals)[2],range(R_vals)[2]),
+         ylim=c(-range(R_vals)[2],range(R_vals)[2]),
+         type='n',
+         xlab=expression(italic(r[i])),
+         ylab=expression(italic(r[j]))
+    )
+    abline(h=0,lty='dashed',lwd=1.5)
+    abline(v=0,lty='dashed',lwd=1.5)
+    apply(r_sample, MARGIN=1,
+          function(x) {
+            segments(0,0,x["ri"],x["rj"],col=grey(0.75))
+          }
+    )
+    # compute and plot the median vector (which appears to end up a bit short for some reason)
+    medianR <- Gmedian(r_sample[,c("ri","rj")])
+    points(medianR[1],medianR[2],pch=20,col="aquamarine4")
+    
+  }
   
+ 
   return(r_sample)
 }
+
+
+#Function to determine radius given maximum abundances N and an alpha matrix
+determine_radius<-function(N, alpha){
+  r<-alpha %*% N
+  R<- sqrt(r[1]^2 + r[2]^2)
+  return(R)
+}
 #Returns Omega and the center of the area
-feasibility_wrapper<-function(R, alpha, rconstraints=NULL, Nupper=NULL){
+feasibility_wrapper<-function(R, alpha, rconstraints=NULL, Nupper=NULL, plot=TRUE){
   
   area <- omega_integrate (    R = R,
                                alpha = alpha,

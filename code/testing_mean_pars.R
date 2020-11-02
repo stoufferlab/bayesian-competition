@@ -16,6 +16,21 @@ trcy_models<- list(trcy_bh_multispecies_poisson.rds,
                    trcy_lv_multispecies_poisson.rds,
                    trcy_rc_multispecies_poisson.rds)
 
+pp<-posterior_feasibility(vero_model=vero_rc_multispecies_poisson.rds,
+                      trcy_model = trcy_rc_multispecies_poisson.rds,
+                      si = si,
+                      gi = gi,
+                      Ni = 1000,
+                      sj = sj,
+                      gj = gj,
+                      Nj = 1000,
+                      env = FALSE,
+                      make_plot = FALSE)
+
+
+
+
+
 #Using abundances of 1000 for both species, this is how using the mean paramter values work
 #not automated because its just for kicks
 

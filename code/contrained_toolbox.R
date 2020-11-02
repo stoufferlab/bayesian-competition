@@ -106,11 +106,11 @@ omega_integrate<-function(R, alpha, rconstraints=NULL, Nupper=NULL){
 }
 
 # sample values of R that are feasible and get the center of the area, plot if you want
-r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL, plot=TRUE){
+r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL, make_plot=FALSE){
   R_vals <- seq(0.001,R, 0.01)
   
   r_sample <- t(sapply(
-    seq_len(1000),
+    seq_len(100),
     function(x,R_vals,alpha,rconstraints,Nupper){
       while(TRUE){
         #you sample a value of R
@@ -132,7 +132,7 @@ r_feasible<-function(R,alpha, rconstraints=NULL,Nupper=NULL, plot=TRUE){
     Nupper=Nupper
   ))
   
-  if(plot==TRUE){
+  if(make_plot){
     plot(0,0,
          xlim=c(-range(R_vals)[2],range(R_vals)[2]),
          ylim=c(-range(R_vals)[2],range(R_vals)[2]),
@@ -165,7 +165,7 @@ determine_radius<-function(N, alpha){
   return(R)
 }
 #Returns Omega and the center of the area
-feasibility_wrapper<-function(R, alpha, rconstraints=NULL, Nupper=NULL, plot=TRUE){
+feasibility_wrapper<-function(R, alpha, rconstraints=NULL, Nupper=NULL, make_plot=FALSE){
   
   area <- omega_integrate (    R = R,
                                alpha = alpha,
@@ -175,7 +175,8 @@ feasibility_wrapper<-function(R, alpha, rconstraints=NULL, Nupper=NULL, plot=TRU
   growth_values<- r_feasible(R = R,
                              alpha = alpha,
                              rconstraints = rconstraints,
-                             Nupper = Nupper  )
+                             Nupper = Nupper,
+                             make_plot = make_plot)
  
   #We get the median of the growth vectors to calculate the center of the area
   

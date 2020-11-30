@@ -102,7 +102,7 @@ omega_integrate<-function(R, alpha, rconstraints=NULL, Nupper=NULL){
     Nupper=Nupper
   )
   #we normalize it
-  return(omega_area$integral/100)
+  return(omega_area$integral/R)
 }
 
 # sample values of R that are feasible and get the center of the area, plot if you want

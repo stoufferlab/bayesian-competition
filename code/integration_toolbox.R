@@ -1,4 +1,4 @@
-require(cubature)
+
 require(tidyverse)
 
 
@@ -71,86 +71,120 @@ calculate_area<-function(R=1, alpha){
 
 
 #given a value of theta (in radians) it calculates the coresponding ri and rj, and checks if they are feasible
-feasibility_theta <- function(theta,alpha, R,rconstraints=NULL,Nupper=NULL){
+feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
   
   
-  #The magnitude of the vector is its R
-  # Theta can go from 0 to 2pi
-  
-  ri <- R * cos(theta)
-  rj <- R * sin(theta)
-  
-  r <- c(ri,rj)
-  # solve for the equilibrium given the interactions and the growth rate vector
-  N <- solve(alpha) %*% r
-  
-  # check if N corresponds to feasibile equilibrium
-  N_feasible <- (N > 0)
-  
-  if(!is.null(Nupper)){
-    N_good <- (N <= Nupper)
-  }else{
-    N_good <- rep(TRUE,length(N))
-  }
-
-  # check whether growth rates are within constraints
-  if(!is.null(rconstraints)){
-    r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
-    #print(r_good)
-  }else{
-    r_good <- rep(TRUE,length(r))
-  }
-
-  feasible <- prod(N_feasible* N_good* r_good)
-  
-   # if(feasible){
-   #   segments(0,0, ri, rj, col="dodgerblue")
-   # }
-
-  return(feasible)
- 
-}
-
-#a numerical integration for all the values of theta in a circle of radius R
-numerical_theta<- function(alpha, R, rconstraints=NULL, Nupper=NULL){
-  thetas <- seq(0 , 2*pi, .01)
-  
-  numerical<- sapply(thetas, function(x, alpha, R, rconstraints, Nupper){
-    pi <-feasibility_theta(theta = x,
-                           alpha = alpha,
-                           R=R,
-                           rconstraints = rconstraints,
-                           Nupper= Nupper)
-  }, alpha = alpha, R=R, rconstraints=rconstraints, Nupper=Nupper)
+  results <- sapply(theta_seq, function(theta, alpha, R, rconstraints, Nupper){
+    #print(theta)
+    ri <- R * cos(theta)
+    rj <- R * sin(theta)
+    r <- c(ri, rj)
+    
+    #we check first if the growth rates are within our constraints
+    if (!is.null(rconstraints)) {
+      r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
+      r_good <- prod(r_good)
+      
+    } else{
+      r_good <- TRUE
+    }
+    
+    #if they are not, we do not bother to solve for abundances
+    if (!r_good) {
+      #  segments(0,0,ri,rj, col="firebrick")
+      return(0)
+    } else{
+      # solve for the equilibrium given the interactions and the growth rate vector
+      N <- solve(alpha) %*% r
+      # check if N corresponds to feasibile equilibrium
+      N_feasible <- (N > 0) %>% prod()
+      
+      #check if they are within our bounds of abundances
+      if (!is.null(Nupper)) {
+        N_good <- (N <= Nupper) %>% prod()
+      } else{
+        N_good <- TRUE
+      }
+      
+      feasible <- prod(N_feasible * N_good)
+      
+      # if(feasible){
+      #   segments(0,0,ri,rj, col="dodgerblue")
+      # }
+      
+      return(feasible)
+      
+    }
+  },alpha=alpha, R=R, rconstraints = rconstraints, Nupper=Nupper)
   
   
-  integration <-  sum(numerical)/length(thetas)
-  #print(integration)
-  return(integration)
+  return(results)
+  
   
 }
 
-# We integrate from 0 to the maximum value of R 
-integrate_radii <- function( alpha, R_max, rconstraints=NULL, Nupper=NULL){
- 
-   all_radii <- cubintegrate(f=numerical_theta, 
-                      lower = 0, 
-                      upper = R_max,
-                      method = "hcubature",
-                      alpha = alpha,
-                      rconstraints=rconstraints,
-                      Nupper=Nupper)
+
+#vectorized integration of theta 
+integrate_theta <-function( R_seq,alpha,rconstraints=NULL,Nupper=NULL ) {
+  thetas <- seq(0 , 2*pi, length.out = 1000)
   
-  return((all_radii$integral)/ R_max)
-} 
+  results <- sapply(R_seq, function(R, alpha, rconstraints, Nupper){
+     
+     area<- feasibility_theta(theta_seq = thetas,
+                              alpha = alpha,
+                              R = R,
+                              rconstraints = rconstraints,
+                              Nupper= Nupper)
+ 
+     # area<-integrate(f=feasibility_theta,
+     #                lower = 0, 
+     #                upper = 2*pi,
+     #                alpha = alpha,
+     #                R = R,
+     #                rconstraints = rconstraints,
+     #                Nupper= Nupper)
+     # 
+   
+    return(sum(area)/length(thetas))
+  }, alpha=alpha,
+  rconstraints = rconstraints,
+  Nupper = Nupper)
+  return(results)
+  
+}
+
+
+integrate_radii <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
+  
+   multiple_R <- integrate( f= integrate_theta,
+                            lower = 0,
+                            upper = R,
+                            alpha = alpha,
+                            rconstraints= rconstraints,
+                            Nupper= Nupper)
+   return( multiple_R[1]$value/R)
+
+  # 
+  # R_seq <- seq(0,R, length.out = 1000)
+  # 
+  # multiple_R <- integrate_theta(R_seq = R_seq,
+  #                               alpha = alpha,
+  #                               rconstraints = rconstraints,
+  #                               Nupper = Nupper)
+  # 
+  # 
+  # return( sum(multiple_R)/length(R_seq))
+}
+
+
 
 #check out how our integration changes with competition coeff
-multiple_omega<-function(diagonal,off_diagonal, R_max, rconstraints=NULL, Nupper=NULL){
+multiple_omega<-function(diagonal,off_diagonal, R, rconstraints=NULL, Nupper=NULL){
   
   alpha <- alpha<- diag(diagonal, ncol = 2, nrow = 2)
   inter_alphas <- seq(0, off_diagonal, 0.01)
   
-  omegas <- sapply(inter_alphas, function(x, R_max, rconstraints, Nupper){
+  omegas <- sapply(inter_alphas, function(x, R, rconstraints, Nupper){
     
     alpha[1, 2] <- x
     alpha[2, 1] <- x
@@ -159,7 +193,7 @@ multiple_omega<-function(diagonal,off_diagonal, R_max, rconstraints=NULL, Nupper
     analytical_intecration <- omega_analytical(alpha)
     numerical_integration <- integrate_radii(
       alpha = alpha,
-      R_max = R_max,
+      R =R,
       rconstraints = rconstraints,
       Nupper = Nupper )
     
@@ -168,7 +202,7 @@ multiple_omega<-function(diagonal,off_diagonal, R_max, rconstraints=NULL, Nupper
     
     return( results)
     
-  },R_max=R_max, rconstraints =rconstraints, Nupper=Nupper   )
+  },R=R, rconstraints =rconstraints, Nupper=Nupper   )
   
   omegas_together <- do.call(rbind, omegas) %>% as.data.frame()
   
@@ -194,11 +228,89 @@ multiple_omega<-function(diagonal,off_diagonal, R_max, rconstraints=NULL, Nupper
   
 }
 
+multiple_radii<- function(R, alpha, rconstraints=NULL, Nupper=NULL){
+  R_seq<- seq(0.000001,R,length.out = 100) %>% as.list()
+  
+  values<- lapply(R_seq, function(x, alpha, rconstraints, Nupper){
+    saavedra <- Omega_SA(alpha)
+    theta_integration <- integrate_radii(alpha=alpha,
+                                         R=x,
+                                         rconstraints = rconstraints,
+                                         Nupper= Nupper)
+    
+  results <- data.frame("R"=x, "Saavedras"=saavedra, "Theta"= theta_integration) 
+  print(results)
+  return(results)
+    
+    
+  } ,alpha=alpha,
+  rconstraints = rconstraints,
+  Nupper = Nupper)
+  
+  calcs <- do.call(rbind, values) %>% as.data.frame()
+  
+  plot( calcs$R, calcs$Saavedras, pch=16, col="firebrick",
+        ylab= "Omega",
+        xlab= "Radius",
+        ylim = c(0,1))
+  points(calcs$R, calcs$Theta, pch=18, col="dodgerblue")
+  
+  return(tt)
+  }
+
+r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL, make_plot=FALSE){
+  R_vals <- c(0.0001,1:100)
+  
+  r_sample <- t(sapply(
+    seq_len(1000),
+    function(x,R_vals,alpha,rconstraints,Nupper){
+      while(TRUE){
+        R <- sample(R_vals,1)
+        theta <- runif(1,0,2*pi)
+        feas <- feasibility_theta(theta = theta,
+                                  R= R,
+                                  alpha = alpha,
+                                  rconstraints = rconstraints,
+                                  Nupper = Nupper)
+        if(feas){
+          return(c(R=R,theta=theta,ri=R*cos(theta),rj=R*sin(theta)))
+        }
+      }
+    },
+    R_vals=R_vals,
+    alpha=alpha,
+    rconstraints=rconstraints,
+    Nupper=Nupper
+  )) %>% as.data.frame()
+  
+  
+  if(make_plot){
+    plot(0,0,
+         xlim=c(-range(R_vals)[2],range(R_vals)[2]),
+         ylim=c(-range(R_vals)[2],range(R_vals)[2]),
+         type='n',
+         xlab=expression(italic(r[i])),
+         ylab=expression(italic(r[j]))
+    )
+    abline(h=0,lty='dashed',lwd=1.5)
+    abline(v=0,lty='dashed',lwd=1.5)
+    apply(r_sample, MARGIN=1,
+          function(x) {
+            segments(0,0,x["ri"],x["rj"],col=grey(0.75))
+          }
+    )
+  }
+  
+  return(r_sample)
+}
+
+
+
 
 
 rconstraints <- list(
   lower = c(-Inf, -Inf),
-  upper = c(Inf, Inf)
+  upper = c(1, 1)
 )
 Nupper <- c(
   i = Inf,
@@ -206,10 +318,22 @@ Nupper <- c(
 )
 
 
+
+
+
+
+
 test<-multiple_omega( diagonal = 1,
                     off_diagonal = .9,
-                    R = 10, 
+                    R = 1, 
                     rconstraints = rconstraints, 
                     Nupper =  Nupper)
+
+
+
+test_radii <- multiple_radii(R = 100,alpha = alpha,rconstraints = rconstraints,Nupper = Nupper)
+
+
+
 
 

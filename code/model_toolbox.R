@@ -17,13 +17,15 @@ get_fixed_growth<- function(model,
                             g,
                             env){
  
-   params <- fixed_model(model)
+  params <- fixed_model(model)
   lambda <- exp(params$lambda_Intercept)
   lambda_env <- exp(params$lambda_Intercept + params$lambda_env)
   
   a <- lambda*g
   a_env <- lambda_env*g
   b <- 1 - ((1-g)*s)
+  
+  #dealing with the hassell model
   if("beta" %in% names(model$formula$pforms)) {
     beta     <- exp(params$beta_Intercept)
     beta_env <- exp(params$beta_Intercept + params$beta_env)
@@ -230,7 +232,7 @@ posterior_feasibility <- function(vero_model,
                                   gj,
                                   Nj,
                                   env = FALSE,
-                                  make_plot = FALSE) {
+                                  make_plot = FALSE){
   #for the mean omega and theta we get the  alpha matrix for mean parameter values
   #for an environmental condition either 0 (control) or 1 (woody)
   mean_alpha_matrix <- get_fixed_alphas(
@@ -238,25 +240,23 @@ posterior_feasibility <- function(vero_model,
     trcy_model = trcy_model,
     gi = gi,
     gj = gj,
-    env = env
-  )
+    env = env)
   #as well as r1 (vero's growth rate)
   vero_growth <- get_fixed_growth(
     model = vero_model,
     s = si,
     g = gi,
-    env = env
-  )
+    env = env)
   
   #and r2 (trcy's growth rate)
   trcy_growth <- get_fixed_growth(
     model = trcy_model,
     s = sj,
     g = gj,
-    env = env
-  )
-  #Store them in a vector
-  r <- c(vero_growth, trcy_growth)
+    env = env)
+  #store them in a vector
+  r <- c(vero_growth,
+         trcy_growth)
   
   # Each model has its own constraints
   rconstraints <- list(
@@ -268,40 +268,48 @@ posterior_feasibility <- function(vero_model,
   Nupper <- c(i = Ni,
               j = Nj)
   #Which determine the Radius, but this will change when we use the posterior alpha matrix
-  R <- determine_radius(N = Nupper, alpha = mean_alpha_matrix)
+  R <- determine_radius(N = Nupper, 
+                        alpha = mean_alpha_matrix)
   
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
-  fixed_feasibility <- feasibility_wrapper(
-    R = R,
+  fixed_feasibility <- integrate_radii(
     alpha = mean_alpha_matrix,
-    rconstraints =  rconstraints,
+    R = R,
+    rconstraints = rconstraints,
+    Nupper = Nupper)
+
+  #Saaveda et al. estimation  
+  fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
+  
+  fixed_center <- r_feasible(
+    alpha = mean_alpha_matrix,
+    rconstraints = rconstraints,
     Nupper = Nupper,
-    make_plot = make_plot
-  )
-  if(make_plot){
-    tt <- paste0(vero_model$name, "-" , trcy_model$name)
-    title(main = tt)
-    points(vero_growth, trcy_growth, pch = 20, col = "firebrick4")
-    draw.circle(0, 0, radius = R)
-  }
-  
-  
-  #The area of the feasibility domain
-  Omega_mean  <- fixed_feasibility$Omega
-  print(Omega_mean)
-  #Its center
-  center_mean <- fixed_feasibility$Center
+    R_max = R,
+    make_plot = make_plot)
+   
   #check if our growth rates are feasible
   feasiblity_mean <- check_feasibility(
     r = r,
     alpha = mean_alpha_matrix,
     rconstraints = rconstraints,
-    Nupper = Nupper
-  )
+    Nupper = Nupper )
   #Calculate the distance from the center
-  distance_mean <- calculate_distance(center = center_mean,
+  distance_mean <- calculate_distance(center = fixed_center,
                                       r = r)
-  ##Now for working with the posterior we extract the posterior parameter values and growwth rates
+  
+  #we store the values using the point estimates
+  mean_parameters_results <- data.frame("Omega_mean"= fixed_feasibility,
+                                   "Omega_mean_saaveda"= fixed_feasibility_SA,
+                                    "theta_mean"= distance_mean,
+                                   "feasibility_mean"= feasiblity_mean)
+  print(mean_parameters_results)
+  
+  #######NOW for the posterior parameters#################################
+  
+
+  
+  # we extract the posterior parameter values and growwth rates
   vero_post <- posterior_parameters(model = vero_model,
                                     s = si,
                                     g = gi)
@@ -310,80 +318,82 @@ posterior_feasibility <- function(vero_model,
                                     s = sj,
                                     g = gj)
   
-  vero_post<-vero_post[sample(nrow(vero_post), 500), ]
-  trcy_post<-trcy_post[sample(nrow(trcy_post), 500), ]
-  #trcy_post<-sample(trcy_post,100,replace = FALSE)
-  #They should be the same length
+  
+  # we check if they are the same size
   num_posterior<- identical(nrow(vero_post),nrow(trcy_post))
-  if(num_posterior){
+  if(!num_posterior){
+    warning("Posterior distributions are not the same length")
+  }else{
     
-    #Hold your horses we are going inside a loop, probably there is a better way but meh
-    Omega_posterior       <- c()
-    feasibility_posterior <- c()
-    distance_posterior     <- c()
+    #just to work with them, should comment out this part aftewards
+    vero_post<-vero_post[sample(nrow(vero_post), 10), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
     
     
-    for( i in 1:nrow(vero_post)){
+    x <- seq(1,nrow(vero_post),1) %>% as.list()
+    
+    posterior_parameters_results<-lapply(x,function(rows,gi,gj,rconstraints, Nupper){
       
-      #we get the corresponding posterior values, vero first, trcy second, gi (vero), gj(trcy)
-      alpha  <-
-        alpha_matrix(
-          vero_row = vero_post[i, ],
-          trcy_row = trcy_post[i, ],
+      alpha  <- alpha_matrix(
+          vero_row = vero_post[rows, ],
+          trcy_row = trcy_post[rows, ],
           gi = gi,
           gj = gj,
-          env = env
-        )
+          env = env )
       
       if (env) {
-        r1 <- vero_post$env_growth[i]
-        r2 <- trcy_post$env_growth[i]
+        r1 <- vero_post$env_growth[rows]
+        r2 <- trcy_post$env_growth[rows]
         
       } else{
-        r1 <- vero_post$growth[i]
-        r2 <- trcy_post$growth[i]
+        r1 <- vero_post$growth[rows]
+        r2 <- trcy_post$growth[rows]
       }
-      #we save them in a vector
-      r_posterior <- c(r1, r2)
-      # Radius changes with the alpha matrix
-      R_posterior <- determine_radius(N = Nupper, alpha = alpha)
-      #Now we are ready to estimate the feasibility domain and its center
-      posterior <- feasibility_wrapper(
-        #these change for every point in the posterior
-        R = R_posterior,
-        alpha = alpha,
-        #These do not
-        rconstraints =  rconstraints,
-        Nupper = Nupper,
-        #never make this true because it will give you 8000 plots
-        make_plot = FALSE
-      )
       
-      Omega <- posterior$Omega
-      center <- posterior$Center
-      distance <- calculate_distance(center = center, r = r_posterior)
-      feas <- check_feasibility(
-        r = r_posterior,
-        alpha = alpha,
-        rconstraints = rconstraints,
-        Nupper = Nupper
-      )
-      #we save our results in vectors
-      Omega_posterior <- c(Omega_posterior, Omega)
-      print(Omega)
-      feasibility_posterior <- c(feasibility_posterior, feas)
-      distance_posterior <- c(distance_posterior, distance)
-    }}else{warning("Posterior distributions are not the same length")}
-  
-  posterior_results<- as.data.frame(cbind(Omega_posterior, distance_posterior, feasibility_posterior)) 
-  posterior_results$vero_model<- vero_model$name
-  posterior_results$trcy_model<- trcy_model$name
-  posterior_results$Omega<- Omega_mean
-  posterior_results$distance<- distance_mean
-  posterior_results$feasibility<- feasiblity_mean
-  
-  
-  
-  
-  return(posterior_results)
-}
+      r_post <- c(r1,r2)
+      
+     #we determine R for every alpha matrix
+      R_post <- determine_radius(N=Nupper,
+                                 alpha = alpha)
+      
+      # omega_post <- integrate_radii(alpha = alpha,
+      #                               R = R_post,
+      #                               rconstraints = rconstraints,
+      #                               Nupper = Nupper )
+      #Saavedras aproximation
+      omega_post_SA <- Omega_SA(alpha = alpha)
+      #center of the domain
+      center_post <- r_feasible(alpha = alpha,
+                                rconstraints = rconstraints,
+                                Nupper = Nupper, 
+                                R_max = R_post,
+                                make_plot = FALSE)
+      #are our growth rates feasible?
+      feasibility_post <- check_feasibility(r= r_post,
+                                            alpha = alpha,
+                                            rconstraints = rconstraints,
+                                            Nupper = Nupper )
+      #how far away are they from the center
+      distance_post <- calculate_distance(center = center_post,
+                                          r = r_post)
+      #all togethe
+      post_results <- data.frame("Omega"= NA, 
+                                 "Omega_saaveda"= omega_post_SA,
+                                  "feasibility" = feasibility_post,
+                                  "theta"= distance_post,
+                                 "Radius" = R_post)
+      
+      return(post_results)
+      
+    }, gi = gi,
+    gj = gj,
+    rconstraints = rconstraints, 
+    Nupper = Nupper)
+   
+    posterior_parameters_results <- do.call(rbind, posterior_parameters_results)
+    
+    all_results <- cbind(mean_parameters_results, posterior_parameters_results)
+    
+    return(all_results) 
+  }
+    }

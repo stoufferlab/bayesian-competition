@@ -112,7 +112,7 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
       r_feasible <- all(r_good)
       
     }else{
-      r_feasible <- c(TRUE,TRUE)
+      r_feasible <- c(TRUE)
     }
     
     #if they are not, we do not bother to solve for abundances
@@ -130,13 +130,15 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
       if(!N_feasible){
         return(0)
       }else{
-        if (!is.null(Nupper)) {
-          N_good <- (N <= Nupper) 
-          N_good <- all(N_good)
-        } else{
-          N_good <- TRUE
-        }
-        return(N_good)
+         if (!is.null(Nupper)) {
+           N_good <- (N <= Nupper) 
+           N_good <- all(N_good)
+           
+         } else{
+           N_good <- TRUE
+       }
+         return(N_good)
+       
       }
       
     }
@@ -151,7 +153,7 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
 #vectorized integration of theta . We do a manual integration because sometimes the area is too small and adaptive integration misses it!
 integrate_theta <-function( R_seq,alpha,rconstraints=NULL,Nupper=NULL ) {
   #we break down a circle into very small parts
-  thetas <- seq(0 , 2*pi, length.out = 2000)
+  thetas <- seq(0 , 2*pi, length.out = 1000)
   
   results <- matrix(sapply(R_seq, function(R, alpha, rconstraints, Nupper){
      
@@ -192,19 +194,7 @@ integrate_radii <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
 
 }
 
-integrate_radii_fast <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
-  
- R_seq <- seq(0,R, length.out = 200)
- 
-multiple_R <- integrate_theta(R_seq = R_seq,
-                              alpha = alpha,
-                              rconstraints = rconstraints,
-                              Nupper= Nupper)
 
-return ( sum(multiple_R)/length(R_seq))
-  
-  
-}
 
 
 #Sample growth rates inside the feasibility domain to determine its median or the center of the feasibility domain
@@ -213,7 +203,7 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
   
   #We sample values of R that are feasible to calculate their median, or the area in the center
   r_sample <- t(sapply(
-    seq_len(2000),
+    seq_len(1000),
     function(x,R_vals,alpha,rconstraints,Nupper){
       while(TRUE){
         R <- sample(R_vals,1)
@@ -259,40 +249,41 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
 
 #Check if ourparticular combination of growth rates is feasible
 check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
-  
-  
-    #we check first if the growth rates are within our constraints
+  inverse_alpha <- inverse_matrix(alpha)
+ 
+  #we check first if the growth rates are within our constraints
     if (!is.null(rconstraints)) {
       r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
-      r_good <- prod(r_good)
-      
-    } else{
-      r_good <- TRUE
+      r_feasible <- all(r_good)
+       }else{
+      r_feasible <- c(TRUE,TRUE)
     }
     
     #if they are not, we do not bother to solve for abundances
-    if (!r_good) {
+    if (!r_feasible) {
       return(0)
-    } else{
-      # solve for the equilibrium given the interactions and the growth rate vector
-      N <- solve(alpha) %*% r
-      # check if N corresponds to feasibile equilibrium
-      N_feasible <- (N > 0) %>% prod()
+    }else{
+      #solve fo abundances
+      N1 <- (inverse_alpha[1, 1] * r[1]) + (inverse_alpha[1, 2] * r[2])
+      N2 <- (inverse_alpha[2, 1] * r[1]) + (inverse_alpha[2, 2] * r[2])
+      #check their feasibility
+      N <- c(N1, N2)
+      N_feasible <- (N > 0)
+      N_feasible <- all(N_feasible)
       
-      #check if they are within our bounds of abundances
-      if (!is.null(Nupper)) {
-        N_good <- (N <= Nupper) %>% prod()
-      } else{
-        N_good <- TRUE
+      if(!N_feasible){
+        return(0)
+      }else{
+        if (!is.null(Nupper)) {
+          N_good <- (N <= Nupper) 
+          N_good <- all(N_good)
+        } else{
+          N_good <- TRUE
+        }
+        return(N_good)
       }
       
-      feasible <- prod(N_feasible * N_good)
-  
     }
- 
-  return(feasible)
-
-  
   
 }
 

@@ -273,41 +273,37 @@ posterior_feasibility <- function(vero_model,
   
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
   
-  # fixed_feasibility <- integrate_radii(
-  #   alpha = mean_alpha_matrix,
-  #   R = R,
-  #   rconstraints = rconstraints,
-  #   Nupper = Nupper)
+    fixed_feasibility <- integrate_radii(
+      alpha = mean_alpha_matrix,
+      R = R,
+      rconstraints = rconstraints,
+      Nupper = Nupper)
 
-  # fixed_feasibility <- integrate_radii_fast(alpha = mean_alpha_matrix,
-  #                                           R =R,
-  #                                           rconstraints = rconstraints,
-  #                                           Nupper = Nupper)
-  # 
+   
   #Saaveda et al. estimation  
-  fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
-  
-  fixed_center <- r_feasible(
-    alpha = mean_alpha_matrix,
-    rconstraints = rconstraints,
-    Nupper = Nupper,
-    R_max = R,
-    make_plot = make_plot)
+   fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
+  # 
+   fixed_center <- r_feasible(
+     alpha = mean_alpha_matrix,
+     rconstraints = rconstraints,
+     Nupper = Nupper,
+     R_max = R,
+     make_plot = make_plot)
    
   #check if our growth rates are feasible
-  feasiblity_mean <- check_feasibility(
-    r = r,
-    alpha = mean_alpha_matrix,
-    rconstraints = rconstraints,
-    Nupper = Nupper )
+    feasiblity_mean <- check_feasibility(
+      r = r,
+      alpha = mean_alpha_matrix,
+      rconstraints = rconstraints,
+      Nupper = Nupper )
   #Calculate the distance from the center
-  distance_mean <- calculate_distance(center = fixed_center,
-                                      r = r)
+   distance_mean <- calculate_distance(center = fixed_center,
+                                       r = r)
   
   #we store the values using the point estimates
-  mean_parameters_results <- data.frame(#"Omega_mean"= fixed_feasibility,
+  mean_parameters_results <- data.frame("Omega_mean"= fixed_feasibility,
                                    "Omega_mean_saaveda"= fixed_feasibility_SA,
-                                    "theta_mean"= distance_mean,
+                                    "theta_mean"=  distance_mean,
                                    "feasibility_mean"= feasiblity_mean)
   print(mean_parameters_results)
   
@@ -362,27 +358,27 @@ posterior_feasibility <- function(vero_model,
       R_post <- determine_radius(N=Nupper,
                                  alpha = alpha)
       
-      omega_post <- integrate_radii(alpha = alpha,
-                                    R = R_post,
-                                    rconstraints = rconstraints,
-                                    Nupper = Nupper )
+       omega_post <- integrate_radii(alpha = alpha,
+                                     R = R_post,
+                                     rconstraints = rconstraints,
+                                     Nupper = Nupper )
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
       #center of the domain
 
-       center_post <- r_feasible(alpha = alpha,
-                                 rconstraints = rconstraints,
-                                 Nupper = Nupper,
-                                 R_max = R_post,
-                                 make_plot = FALSE)
+        center_post <- r_feasible(alpha = alpha,
+                                  rconstraints = rconstraints,
+                                  Nupper = Nupper,
+                                  R_max = R_post,
+                                  make_plot = FALSE)
       #are our growth rates feasible?
-      feasibility_post <- check_feasibility(r= r_post,
-                                            alpha = alpha,
-                                            rconstraints = rconstraints,
-                                            Nupper = Nupper )
+       feasibility_post <- check_feasibility(r= r_post,
+                                             alpha = alpha,
+                                             rconstraints = rconstraints,
+                                             Nupper = Nupper )
       #how far away are they from the center
-      distance_post <- calculate_distance(center = center_post,
-                                          r = r_post)
+       distance_post <- calculate_distance(center = center_post,
+                                           r = r_post)
       #all togethe
       post_results <- data.frame("Omega"= omega_post, 
                                  "Omega_saaveda"= omega_post_SA,

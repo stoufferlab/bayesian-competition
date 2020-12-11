@@ -140,7 +140,7 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL, make_plot=FALSE){
 #we make explicit the constraints of the growth rate of the two species
 rconstraints <- list(
   lower = c(-Inf, -Inf),
-  upper = c(1, 1)
+  upper = c(Inf, Inf)
 )
 
 #As well as their maximum abundances

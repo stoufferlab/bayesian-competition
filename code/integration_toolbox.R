@@ -73,11 +73,34 @@ calculate_area<-function(R=1, alpha){
 #But what happens when we have constraints?
 
 
+inverse_matrix<-function(alpha){
+   
+   deteminant_alpha <- (alpha[1,1] * alpha[2,2]) - (alpha[2,1] * alpha[1,2])
+   
+ inverse_det  <- 1 / deteminant_alpha
+  
+  
+  adjugate <- matrix( NA,nrow=2,ncol=2)                  
+  adjugate[1,1] <- alpha[2,2]
+  adjugate[2,2] <- alpha[1,1]
+  
+  adjugate[1,2] <- -alpha[1,2]
+  adjugate[2,1] <- -alpha[2,1]
+  
+  
+  ii <- inverse_det * adjugate
+  
+  return(ii)
+  
+  
+}
 #given a value (or multiple values) of theta (in radians) it calculates the coresponding ri and rj, and checks if they are feasible
+
 feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
-  
-  
-  results <- sapply(theta_seq, function(theta, alpha, R, rconstraints, Nupper){
+  #we do not use solve to save time because posteriors are looooong
+  inverse_alpha <- inverse_matrix(alpha)
+  #we integrate over values of theta
+  results <- sapply(theta_seq, function(theta, inverse_alpha, R, rconstraints, Nupper){
     #print(theta)
     ri <- R * cos(theta)
     rj <- R * sin(theta)
@@ -86,39 +109,38 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
     #we check first if the growth rates are within our constraints
     if (!is.null(rconstraints)) {
       r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
-      r_good <- prod(r_good)
+      r_feasible <- all(r_good)
       
-    } else{
-      r_good <- TRUE
+    }else{
+      r_feasible <- c(TRUE,TRUE)
     }
     
     #if they are not, we do not bother to solve for abundances
-    if (!r_good) {
-      #  segments(0,0,ri,rj, col="firebrick")
+    if (!r_feasible) {
       return(0)
     } else{
-      # solve for the equilibrium given the interactions and the growth rate vector
-      N <- solve(alpha) %*% r
-      # check if N corresponds to feasibile equilibrium
-      N_feasible <- (N > 0) %>% prod()
+      #solve fo abundances
+      N1 <- (inverse_alpha[1, 1] * ri) + (inverse_alpha[1, 2] * rj)
+      N2 <- (inverse_alpha[2, 1] * ri) + (inverse_alpha[2, 2] * rj)
+      #check their feasibility
+      N <- c(N1, N2)
+      N_feasible <- (N > 0)
+      N_feasible <- all(N_feasible)
       
-      #check if they are within our bounds of abundances
-      if (!is.null(Nupper)) {
-        N_good <- (N <= Nupper) %>% prod()
-      } else{
-        N_good <- TRUE
+      if(!N_feasible){
+        return(0)
+      }else{
+        if (!is.null(Nupper)) {
+          N_good <- (N <= Nupper) 
+          N_good <- all(N_good)
+        } else{
+          N_good <- TRUE
+        }
+        return(N_good)
       }
       
-      feasible <- prod(N_feasible * N_good)
-      
-      # if(feasible){
-      #   segments(0,0,ri,rj, col="dodgerblue")
-      # }
-      
-      return(feasible)
-      
     }
-  },alpha=alpha, R=R, rconstraints = rconstraints, Nupper=Nupper)
+  },inverse_alpha=inverse_alpha, R=R, rconstraints = rconstraints, Nupper=Nupper)
   
   
   return(results)
@@ -126,13 +148,12 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
   
 }
 
-
 #vectorized integration of theta . We do a manual integration because sometimes the area is too small and adaptive integration misses it!
 integrate_theta <-function( R_seq,alpha,rconstraints=NULL,Nupper=NULL ) {
   #we break down a circle into very small parts
   thetas <- seq(0 , 2*pi, length.out = 2000)
   
-  results <- sapply(R_seq, function(R, alpha, rconstraints, Nupper){
+  results <- matrix(sapply(R_seq, function(R, alpha, rconstraints, Nupper){
      
      area<- feasibility_theta(theta_seq = thetas,
                               alpha = alpha,
@@ -144,15 +165,15 @@ integrate_theta <-function( R_seq,alpha,rconstraints=NULL,Nupper=NULL ) {
     return(sum(area)/length(thetas))
   }, alpha=alpha,
   rconstraints = rconstraints,
-  Nupper = Nupper)
+  Nupper = Nupper))
   
-  results<- as.matrix(results)
+ # results<- as.matrix(results)
   
   return(results)
   
 }
 
-
+#We integrate over different values of R to check how constraints affect the feasibility domain as R increases
 integrate_radii <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
 
    multiple_R <- hcubature(f=integrate_theta,
@@ -165,10 +186,28 @@ integrate_radii <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
                       Nupper= Nupper)
    
    return(multiple_R$integral/R)
+   
+   
+
 
 }
 
+integrate_radii_fast <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
+  
+ R_seq <- seq(0,R, length.out = 200)
+ 
+multiple_R <- integrate_theta(R_seq = R_seq,
+                              alpha = alpha,
+                              rconstraints = rconstraints,
+                              Nupper= Nupper)
 
+return ( sum(multiple_R)/length(R_seq))
+  
+  
+}
+
+
+#Sample growth rates inside the feasibility domain to determine its median or the center of the feasibility domain
 r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALSE){
   R_vals <- seq(0, R_max, length.out = 2000)
   
@@ -218,7 +257,7 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
  # return(r_sample)
 }
 
-
+#Check if ourparticular combination of growth rates is feasible
 check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
   
   
@@ -257,6 +296,8 @@ check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
   
 }
 
+
+#How far away are the observed growth rates from the center of the feasiblity domain?
 calculate_distance<-function(center, r){
   dist<- sqrt((r[1]- center[1])^2 + (r[2]- center[2])^2)
   return(dist)

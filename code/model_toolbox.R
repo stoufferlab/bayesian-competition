@@ -272,12 +272,18 @@ posterior_feasibility <- function(vero_model,
                         alpha = mean_alpha_matrix)
   
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
-  fixed_feasibility <- integrate_radii(
-    alpha = mean_alpha_matrix,
-    R = R,
-    rconstraints = rconstraints,
-    Nupper = Nupper)
+  
+  # fixed_feasibility <- integrate_radii(
+  #   alpha = mean_alpha_matrix,
+  #   R = R,
+  #   rconstraints = rconstraints,
+  #   Nupper = Nupper)
 
+  # fixed_feasibility <- integrate_radii_fast(alpha = mean_alpha_matrix,
+  #                                           R =R,
+  #                                           rconstraints = rconstraints,
+  #                                           Nupper = Nupper)
+  # 
   #Saaveda et al. estimation  
   fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
   
@@ -299,7 +305,7 @@ posterior_feasibility <- function(vero_model,
                                       r = r)
   
   #we store the values using the point estimates
-  mean_parameters_results <- data.frame("Omega_mean"= fixed_feasibility,
+  mean_parameters_results <- data.frame(#"Omega_mean"= fixed_feasibility,
                                    "Omega_mean_saaveda"= fixed_feasibility_SA,
                                     "theta_mean"= distance_mean,
                                    "feasibility_mean"= feasiblity_mean)
@@ -356,18 +362,19 @@ posterior_feasibility <- function(vero_model,
       R_post <- determine_radius(N=Nupper,
                                  alpha = alpha)
       
-      # omega_post <- integrate_radii(alpha = alpha,
-      #                               R = R_post,
-      #                               rconstraints = rconstraints,
-      #                               Nupper = Nupper )
+      omega_post <- integrate_radii(alpha = alpha,
+                                    R = R_post,
+                                    rconstraints = rconstraints,
+                                    Nupper = Nupper )
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
       #center of the domain
-      center_post <- r_feasible(alpha = alpha,
-                                rconstraints = rconstraints,
-                                Nupper = Nupper, 
-                                R_max = R_post,
-                                make_plot = FALSE)
+
+       center_post <- r_feasible(alpha = alpha,
+                                 rconstraints = rconstraints,
+                                 Nupper = Nupper,
+                                 R_max = R_post,
+                                 make_plot = FALSE)
       #are our growth rates feasible?
       feasibility_post <- check_feasibility(r= r_post,
                                             alpha = alpha,
@@ -377,7 +384,7 @@ posterior_feasibility <- function(vero_model,
       distance_post <- calculate_distance(center = center_post,
                                           r = r_post)
       #all togethe
-      post_results <- data.frame("Omega"= NA, 
+      post_results <- data.frame("Omega"= omega_post, 
                                  "Omega_saaveda"= omega_post_SA,
                                   "feasibility" = feasibility_post,
                                   "theta"= distance_post,

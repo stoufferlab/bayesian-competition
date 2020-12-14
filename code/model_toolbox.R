@@ -222,15 +222,15 @@ alpha_matrix <- function(vero_row,
 }
 
 
-#function that spits out an omega, feasibility and theta calculated from the posterior of two models. env is a binary that tells it if to take iinto consideration the environmental variables. Ni and Nj are the maximum expected abundances of species i (vero) and j (trcy)
+#function that spits out an omega, feasibility and theta calculated from the posterior of two models. env is a binary that tells it if to take iinto consideration the environmental variables. Ni_max and Nj_max are the maximum expected abundances of species i (vero) and j (trcy)
 posterior_feasibility <- function(vero_model,
                                   trcy_model,
                                   si,
                                   gi,
-                                  Ni,
+                                  Ni_max,
                                   sj,
                                   gj,
-                                  Nj,
+                                  Nj_max,
                                   env = FALSE,
                                   make_plot = FALSE){
   #for the mean omega and theta we get the  alpha matrix for mean parameter values
@@ -265,11 +265,13 @@ posterior_feasibility <- function(vero_model,
   )
   
   #And each species its maximum expected abundances
-  Nupper <- c(i = Ni,
-              j = Nj)
-  #Which determine the Radius, but this will change when we use the posterior alpha matrix
-  R <- determine_radius(N = Nupper, 
-                        alpha = mean_alpha_matrix)
+  Nupper <- c(i = Ni_max,
+              j = Nj_max)
+  #Which determine the Radius for each alpha matrix used
+  R <- determine_radius(alpha = mean_alpha_matrix,
+                        Ni_max = Ni_max,
+                        Nj_max = Nj_max)
+  
   
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
   
@@ -300,7 +302,7 @@ posterior_feasibility <- function(vero_model,
    distance_mean <- calculate_distance(center = fixed_center,
                                        r = r)
   
-  #we store the values using the point estimates
+  #we store the values of coexistence using the point estimates
   mean_parameters_results <- data.frame("Omega_mean"= fixed_feasibility,
                                    "Omega_mean_saaveda"= fixed_feasibility_SA,
                                     "theta_mean"=  distance_mean,
@@ -308,7 +310,6 @@ posterior_feasibility <- function(vero_model,
   print(mean_parameters_results)
   
   #######NOW for the posterior parameters#################################
-  
 
   
   # we extract the posterior parameter values and growwth rates
@@ -328,10 +329,10 @@ posterior_feasibility <- function(vero_model,
   }else{
     
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 200), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 200), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 10), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
     
-    
+    #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post),1) %>% as.list()
     
     posterior_parameters_results<-lapply(x,function(rows,gi,gj,rconstraints, Nupper){
@@ -355,9 +356,10 @@ posterior_feasibility <- function(vero_model,
       r_post <- c(r1,r2)
       
      #we determine R for every alpha matrix
-      R_post <- determine_radius(N=Nupper,
-                                 alpha = alpha)
-      
+      R_post <- determine_radius(alpha = alpha, 
+                                 Ni_max = Ni_max,
+                                 Nj_max = Nj_max)
+    
        omega_post <- integrate_radii(alpha = alpha,
                                      R = R_post,
                                      rconstraints = rconstraints,
@@ -365,7 +367,6 @@ posterior_feasibility <- function(vero_model,
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
       #center of the domain
-
         center_post <- r_feasible(alpha = alpha,
                                   rconstraints = rconstraints,
                                   Nupper = Nupper,

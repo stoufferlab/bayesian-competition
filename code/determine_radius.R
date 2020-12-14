@@ -29,7 +29,7 @@ determine_radius<- function(alpha, Ni_max, Nj_max){
   #initial params at the center not at the boundary
   N0 = c(Ni_max/2,Nj_max/2)
   
-  
+  ctrl <- list(TOL=1e-6, trace=0)
   solution <- solnp(fun = radius,
                     pars = N0,
                     ineqfun = inequalities,
@@ -37,7 +37,8 @@ determine_radius<- function(alpha, Ni_max, Nj_max){
                     ineqLB = lower_constraints,
                     alpha = alpha,
                     Ni_max = Ni_max,
-                    Nj_max = Nj_max)
+                    Nj_max = Nj_max,
+                    control = ctrl)
   
   convergence <- solution$convergence
   

@@ -17,12 +17,13 @@ fixed_row_model <- function(vero_models,
                                   trcy_model = trcy_model,
                                   si = si,
                                   gi = gi,
-                                  Ni = 1000,
                                   sj = sj,
                                   gj = gj,
-                                  Nj = 1000,
-                                  env = FALSE,
+                                  Ni = Ni,
+                                  Nj = Nj,
+                                  env = env,
                                   make_plot = make_plot)
+    
     return(post)
   })
   

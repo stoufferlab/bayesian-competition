@@ -69,13 +69,29 @@ calculate_area<-function(R=1, alpha){
  return(proportion_area)
   
 }
-
+r_centroid <- function(alpha){
+  n <- nrow(alpha)
+  D <- diag(1/sqrt(diag(t(alpha)%*%alpha)))
+  alpha_n <- alpha %*% D
+  r_c <- rowSums(alpha_n) /n 
+  r_c <- t(t(r_c))
+  return(r_c)
+}
+theta <- function(alpha,r){
+  r_c <- r_centroid(alpha)
+  out <- acos(sum(r_c*r)/(sqrt(sum(r^2))*sqrt(sum(r_c^2))))*180/pi
+  return(out)
+}
+test_feasibility <- function(alpha,r){
+  out <- prod(solve(alpha,r)>0)
+  return(out)
+}
 #But what happens when we have constraints?
 
 
 inverse_matrix<-function(alpha){
    
-   deteminant_alpha <- (alpha[1,1] * alpha[2,2]) - (alpha[2,1] * alpha[1,2])
+  deteminant_alpha <- (alpha[1,1] * alpha[2,2]) - (alpha[2,1] * alpha[1,2])
    
  inverse_det  <- 1 / deteminant_alpha
   
@@ -97,10 +113,10 @@ inverse_matrix<-function(alpha){
 #given a value (or multiple values) of theta (in radians) it calculates the coresponding ri and rj, and checks if they are feasible
 
 feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
-  #we do not use solve to save time because posteriors are looooong
-  inverse_alpha <- inverse_matrix(alpha)
+  #we do not use solve to save time
+  
   #we integrate over values of theta
-  results <- sapply(theta_seq, function(theta, inverse_alpha, R, rconstraints, Nupper){
+  results <- sapply(theta_seq, function(theta, R, rconstraints, Nupper){
     #print(theta)
     ri <- R * cos(theta)
     rj <- R * sin(theta)
@@ -120,6 +136,7 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
       return(0)
     } else{
       #solve fo abundances
+      inverse_alpha <- inverse_matrix(alpha)
       N1 <- (inverse_alpha[1, 1] * ri) + (inverse_alpha[1, 2] * rj)
       N2 <- (inverse_alpha[2, 1] * ri) + (inverse_alpha[2, 2] * rj)
       #check their feasibility
@@ -131,6 +148,7 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
         return(0)
       }else{
          if (!is.null(Nupper)) {
+           #we check that abundances are below the max abundance
            N_good <- (N <= Nupper) 
            N_good <- all(N_good)
            
@@ -142,7 +160,7 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
       }
       
     }
-  },inverse_alpha=inverse_alpha, R=R, rconstraints = rconstraints, Nupper=Nupper)
+  }, R=R, rconstraints = rconstraints, Nupper=Nupper)
   
   
   return(results)
@@ -296,11 +314,3 @@ calculate_distance<-function(center, r){
 
 
 
-
-
-#this has to be optimized but mean time
-determine_radius<-function(N, alpha){
-  r<-alpha %*% N
-  R<- sqrt(r[1]^2 + r[2]^2)
-  return(R)
-}

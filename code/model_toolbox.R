@@ -235,12 +235,17 @@ posterior_feasibility <- function(vero_model,
                                   make_plot = FALSE){
   #for the mean omega and theta we get the  alpha matrix for mean parameter values
   #for an environmental condition either 0 (control) or 1 (woody)
+  name <- paste0(vero_model$name, "and", trcy_model$name)
+  print(name)
   mean_alpha_matrix <- get_fixed_alphas(
     vero_model = vero_model,
     trcy_model = trcy_model,
     gi = gi,
     gj = gj,
     env = env)
+  
+
+  
   #as well as r1 (vero's growth rate)
   vero_growth <- get_fixed_growth(
     model = vero_model,
@@ -272,7 +277,7 @@ posterior_feasibility <- function(vero_model,
                         Ni_max = Ni_max,
                         Nj_max = Nj_max)
   
-  
+
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
   
     fixed_feasibility <- integrate_radii(
@@ -281,9 +286,11 @@ posterior_feasibility <- function(vero_model,
       rconstraints = rconstraints,
       Nupper = Nupper)
 
-   
+  
   #Saaveda et al. estimation  
    fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
+   fixed_theta_SA <-theta(alpha = mean_alpha_matrix,
+                          r =r)
   # 
    fixed_center <- r_feasible(
      alpha = mean_alpha_matrix,
@@ -303,8 +310,10 @@ posterior_feasibility <- function(vero_model,
                                        r = r)
   
   #we store the values of coexistence using the point estimates
-  mean_parameters_results <- data.frame("Omega_mean"= fixed_feasibility,
+  mean_parameters_results <- data.frame(
                                    "Omega_mean_saaveda"= fixed_feasibility_SA,
+                                   "theta_mean_saavedra" = fixed_theta_SA,
+                                   "Omega_mean"= fixed_feasibility,
                                     "theta_mean"=  distance_mean,
                                    "feasibility_mean"= feasiblity_mean)
   print(mean_parameters_results)
@@ -328,9 +337,11 @@ posterior_feasibility <- function(vero_model,
     warning("Posterior distributions are not the same length")
   }else{
     
+    print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
     vero_post<-vero_post[sample(nrow(vero_post), 10), ]
     trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
+    
     
     #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post),1) %>% as.list()
@@ -343,6 +354,7 @@ posterior_feasibility <- function(vero_model,
           gi = gi,
           gj = gj,
           env = env )
+      
       
       if (env) {
         r1 <- vero_post$env_growth[rows]
@@ -359,13 +371,18 @@ posterior_feasibility <- function(vero_model,
       R_post <- determine_radius(alpha = alpha, 
                                  Ni_max = Ni_max,
                                  Nj_max = Nj_max)
-    
+   
+     
+     
        omega_post <- integrate_radii(alpha = alpha,
                                      R = R_post,
                                      rconstraints = rconstraints,
                                      Nupper = Nupper )
+    
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
+      theta_post_SA <- theta(alpha = alpha, 
+                             r = r_post)
       #center of the domain
         center_post <- r_feasible(alpha = alpha,
                                   rconstraints = rconstraints,
@@ -381,12 +398,15 @@ posterior_feasibility <- function(vero_model,
        distance_post <- calculate_distance(center = center_post,
                                            r = r_post)
       #all togethe
-      post_results <- data.frame("Omega"= omega_post, 
+      post_results <- data.frame(
                                  "Omega_saaveda"= omega_post_SA,
-                                  "feasibility" = feasibility_post,
+                                 "theta_saavedra"= theta_post_SA,
+                                 "Omega"= omega_post, 
                                   "theta"= distance_post,
+                                 "feasibility" = feasibility_post,
                                  "Radius" = R_post)
-      
+   
+       #print(x)
       return(post_results)
       
     }, gi = gi,
@@ -397,7 +417,10 @@ posterior_feasibility <- function(vero_model,
     posterior_parameters_results <- do.call(rbind, posterior_parameters_results)
     
     all_results <- cbind(mean_parameters_results, posterior_parameters_results)
-    
+   # print(all_results)
+     file <- paste0(name,".RDS")
+    # print(file)
+    saveRDS(object = all_results,file = paste0(name,".RDS"))
     return(all_results) 
   }
     }

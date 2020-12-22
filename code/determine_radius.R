@@ -1,59 +1,18 @@
-require(Rsolnp)
+#determining the radius
 
-
-#to maximize f(x) is equivalent to minimizing -f(x)
-# so this is a function that gives you -R^2
-radius<- function(N, alpha, Ni_max, Nj_max){
-  #Where N[1] is Ni and N[2] is Nj
-  r1 = ( (N[1]*alpha[1,1]) + (N[2]*alpha[1,2]))^2
-  r2 = ( (N[1]*alpha[1,2]) + (N[2]*alpha[2,2]))^2
-  # remember that this actually gives you -R^2
-  R = - r1 - r2
-  return(R)
+determine_radius <-function(alpha, Ni_max, Nj_max){
+  
+  R1 <- sqrt( (alpha[1,1]*Ni_max)^2 + (alpha[2,1]*Ni_max)^2 )
+  R2 <- sqrt( (alpha[1,2]*Nj_max)^2 + (alpha[2,2]*Nj_max)^2 )
+  R3 <- sqrt ( (alpha[1,1]*Ni_max + alpha[1,2]*Nj_max)^2 + (alpha[2,1]*Ni_max +           alpha[2,2]*Nj_max)^2  )
+  
+  Ni <- (- Nj_max) * ( ((alpha[1,1]*alpha[1,2]) + (alpha[2,1]*alpha[2,2])) /(alpha[1,1]^2 + alpha[2,1]^2 )  )
+  Nj <- (- Ni_max) * ( ((alpha[1,1]*alpha[1,2]) + (alpha[2,1]*alpha[2,2])) /(alpha[1,2]^2 + alpha[2,2]^2 )  )
+  
+  R4 <- sqrt ( (alpha[1,1]*Ni + alpha[1,2]*Nj_max)^2 + (alpha[2,1]*Ni + alpha[2,2]*Nj_max)^2  )
+  R5 <- sqrt ( (alpha[1,1]*Ni_max + alpha[1,2]*Nj)^2 + (alpha[2,1]*Ni_max + alpha[2,2]*Nj)^2  )
+  
+  values <- c( R1, R2, R3, R4, R5)
+  #print(values)
+  return(max(values))
 }
-
-#Note that the main and constraint functions must take the exact same arguments, irrespective of whether they are used by all of them.
-inequalities <- function(N,alpha, Ni_max, Nj_max) { 
-  z1=  N[1] - Ni_max
-  z2=  N[2] - Nj_max
-  return(c(z1, z2))
-}
-
-#wrapper function that takes maximum values of abundances and the alpha matrix
-#returns the value of R optimized
-determine_radius<- function(alpha, Ni_max, Nj_max){
-  # Ni/Nj has to be equal or smaller than Ni_max
-  upper_constraints <- c(0,0)
-  # Ni/Nj has to be equal or greater than 0
-  lower_constraints <- c(-Ni_max,-Nj_max)
-  #initial params at the center not at the boundary
-  N0 = c(Ni_max/2,Nj_max/2)
-  
-  ctrl <- list(TOL=1e-6, trace=0)
-  solution <- solnp(fun = radius,
-                    pars = N0,
-                    ineqfun = inequalities,
-                    ineqUB = upper_constraints,
-                    ineqLB = lower_constraints,
-                    alpha = alpha,
-                    Ni_max = Ni_max,
-                    Nj_max = Nj_max,
-                    control = ctrl)
-  
-  convergence <- solution$convergence
-  
-  if (convergence == 0) {
-    #we extract R
-    n <- length(solution$values)
-    value  <- solution$values[2]
-    R <- sqrt(-value)
-    return(R)
-  }else{
-    warning("No convergence")
-  }
-  
-  
-}
-
-
-

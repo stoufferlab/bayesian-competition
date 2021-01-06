@@ -339,8 +339,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 10), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 2000), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 2000), ]
     
     
     #to iterate over rows without using a loop
@@ -406,7 +406,7 @@ posterior_feasibility <- function(vero_model,
                                  "feasibility" = feasibility_post,
                                  "Radius" = R_post)
    
-       #print(x)
+       print(x)
       return(post_results)
       
     }, gi = gi,
@@ -417,6 +417,8 @@ posterior_feasibility <- function(vero_model,
     posterior_parameters_results <- do.call(rbind, posterior_parameters_results)
     
     all_results <- cbind(mean_parameters_results, posterior_parameters_results)
+    all_results[,"vero_model"] <- vero_model$name
+    all_results[,"trcy_model"] <- trcy_model$name
    # print(all_results)
      file <- paste0(name,".RDS")
     # print(file)

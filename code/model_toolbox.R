@@ -289,9 +289,10 @@ posterior_feasibility <- function(vero_model,
   
   #Saaveda et al. estimation  
    fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
-   fixed_theta_SA <-theta(alpha = mean_alpha_matrix,
+   fixed_centroid_SA <- r_centroid(mean_alpha_matrix)
+   fixed_theta_SA <-theta(r_c = fixed_centroid_SA,
                           r =r)
-  # 
+  # ou estimation of the center
    fixed_center <- r_feasible(
      alpha = mean_alpha_matrix,
      rconstraints = rconstraints,
@@ -308,14 +309,18 @@ posterior_feasibility <- function(vero_model,
   #Calculate the distance from the center
    distance_mean <- calculate_distance(center = fixed_center,
                                        r = r)
+   theta_mean <- theta(r_c = fixed_center,
+                       r = r )
   
   #we store the values of coexistence using the point estimates
   mean_parameters_results <- data.frame(
                                    "Omega_mean_saaveda"= fixed_feasibility_SA,
                                    "theta_mean_saavedra" = fixed_theta_SA,
                                    "Omega_mean"= fixed_feasibility,
-                                    "theta_mean"=  distance_mean,
-                                   "feasibility_mean"= feasiblity_mean)
+                                    "distance_mean"=  distance_mean,
+                                    "theta_mean" = theta_mean,
+                                   "feasibility_mean"= feasiblity_mean,
+                                   "R_mean"=R)
   print(mean_parameters_results)
   
   #######NOW for the posterior parameters#################################
@@ -339,8 +344,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 2000), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 2000), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 1000), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 1000), ]
     
     
     #to iterate over rows without using a loop
@@ -381,7 +386,8 @@ posterior_feasibility <- function(vero_model,
     
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
-      theta_post_SA <- theta(alpha = alpha, 
+      centroid_post_SA <- r_centroid(alpha=alpha)
+      theta_post_SA <- theta(r_c = centroid_post_SA, 
                              r = r_post)
       #center of the domain
         center_post <- r_feasible(alpha = alpha,
@@ -397,12 +403,15 @@ posterior_feasibility <- function(vero_model,
       #how far away are they from the center
        distance_post <- calculate_distance(center = center_post,
                                            r = r_post)
+       theta_post <- theta(r_c = center_post,
+                           r = r_post)
       #all togethe
       post_results <- data.frame(
                                  "Omega_saaveda"= omega_post_SA,
                                  "theta_saavedra"= theta_post_SA,
                                  "Omega"= omega_post, 
-                                  "theta"= distance_post,
+                                  "distance"= distance_post,
+                                 "theta" = theta_post,
                                  "feasibility" = feasibility_post,
                                  "Radius" = R_post)
    

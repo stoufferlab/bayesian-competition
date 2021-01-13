@@ -77,11 +77,13 @@ r_centroid <- function(alpha){
   r_c <- t(t(r_c))
   return(r_c)
 }
-theta <- function(alpha,r){
-  r_c <- r_centroid(alpha)
+theta <- function(r_c,r){
   out <- acos(sum(r_c*r)/(sqrt(sum(r^2))*sqrt(sum(r_c^2))))*180/pi
   return(out)
 }
+
+
+
 test_feasibility <- function(alpha,r){
   out <- prod(solve(alpha,r)>0)
   return(out)

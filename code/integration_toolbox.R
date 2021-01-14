@@ -4,7 +4,7 @@ require(mvtnorm)
 require(cubature)
 require(Gmedian)
 
-#previous functions used by saaveda et al. These 3 functions give the exact same result for a given alpha and R.
+#previous functions used by saaveda et al. These  functions give the exact same result for a given alpha and R.
 Omega_SA <- function(alpha){
   n <- nrow(alpha)
   Sigma <-solve(t(alpha) %*% alpha )
@@ -69,6 +69,7 @@ calculate_area<-function(R=1, alpha){
  return(proportion_area)
   
 }
+# And the characteristics of the feasibility domain
 r_centroid <- function(alpha){
   n <- nrow(alpha)
   D <- diag(1/sqrt(diag(t(alpha)%*%alpha)))
@@ -81,16 +82,16 @@ theta <- function(r_c,r){
   out <- acos(sum(r_c*r)/(sqrt(sum(r^2))*sqrt(sum(r_c^2))))*180/pi
   return(out)
 }
-
-
-
 test_feasibility <- function(alpha,r){
   out <- prod(solve(alpha,r)>0)
   return(out)
 }
-#But what happens when we have constraints?
 
 
+
+# incorporating constraints -----------------------------------------------
+
+# Function to get the inverse of a 2 by 2 matrix to save time
 inverse_matrix<-function(alpha){
    
   deteminant_alpha <- (alpha[1,1] * alpha[2,2]) - (alpha[2,1] * alpha[1,2])
@@ -112,8 +113,8 @@ inverse_matrix<-function(alpha){
   
   
 }
-#given a value (or multiple values) of theta (in radians) it calculates the coresponding ri and rj, and checks if they are feasible
 
+#given a value (or multiple values) of theta (in radians) it calculates the coresponding ri and rj, and checks if they are feasible
 feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
   #we do not use solve to save time
   
@@ -271,38 +272,41 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
 check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
   inverse_alpha <- inverse_matrix(alpha)
  
-  #we check first if the growth rates are within our constraints
-    if (!is.null(rconstraints)) {
-      r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
-      r_feasible <- all(r_good)
-       }else{
-      r_feasible <- c(TRUE,TRUE)
-    }
+  if (!is.null(rconstraints)) {
+    r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
+    r_feasible <- all(r_good)
     
-    #if they are not, we do not bother to solve for abundances
-    if (!r_feasible) {
+  }else{
+    r_feasible <- c(TRUE)
+  }
+  
+  #if they are not, we do not bother to solve for abundances
+  if (!r_feasible) {
+    return(0)
+  } else{
+    #solve fo abundances
+    inverse_alpha <- inverse_matrix(alpha)
+    N1 <- (inverse_alpha[1, 1] * r[1]) + (inverse_alpha[1, 2] * r[2])
+    N2 <- (inverse_alpha[2, 1] * r[1]) + (inverse_alpha[2, 2] * r[2])
+    #check their feasibility
+    N <- c(N1, N2)
+    N_feasible <- (N > 0)
+    N_feasible <- all(N_feasible)
+    
+    if(!N_feasible){
       return(0)
     }else{
-      #solve fo abundances
-      N1 <- (inverse_alpha[1, 1] * r[1]) + (inverse_alpha[1, 2] * r[2])
-      N2 <- (inverse_alpha[2, 1] * r[1]) + (inverse_alpha[2, 2] * r[2])
-      #check their feasibility
-      N <- c(N1, N2)
-      N_feasible <- (N > 0)
-      N_feasible <- all(N_feasible)
-      
-      if(!N_feasible){
-        return(0)
-      }else{
-        if (!is.null(Nupper)) {
-          N_good <- (N <= Nupper) 
-          N_good <- all(N_good)
-        } else{
-          N_good <- TRUE
-        }
-        return(N_good)
+      if (!is.null(Nupper)) {
+        #we check that abundances are below the max abundance
+        N_good <- (N <= Nupper) 
+        N_good <- all(N_good)
+        
+      } else{
+        N_good <- TRUE
       }
+      return(N_good)
       
+    }
     }
   
 }

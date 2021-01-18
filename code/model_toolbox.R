@@ -287,30 +287,25 @@ posterior_feasibility <- function(vero_model,
       Nupper = Nupper)
 
   
-  #Saaveda et al. estimation  
+  #Saaveda et al. estimation, to compare
    fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
    fixed_centroid_SA <- r_centroid(mean_alpha_matrix)
    fixed_theta_SA <-theta(r_c = fixed_centroid_SA,
                           r =r)
-  # ou estimation of the center
-   fixed_center <- r_feasible(
-     alpha = mean_alpha_matrix,
-     rconstraints = rconstraints,
-     Nupper = Nupper,
-     R_max = R,
-     make_plot = make_plot)
-   
+  # ou estimation of the distance from the bounds
+  distance_mean<-  distance_from_limit(alpha = mean_alpha_matrix,
+                       R_max = R,
+                       rconstraints = rconstraints, 
+                       Nupper = Nupper,
+                       r = r)
+ 
   #check if our growth rates are feasible
     feasiblity_mean <- check_feasibility(
       r = r,
       alpha = mean_alpha_matrix,
       rconstraints = rconstraints,
       Nupper = Nupper )
-  #Calculate the distance from the center
-   distance_mean <- calculate_distance(center = fixed_center,
-                                       r = r)
-   theta_mean <- theta(r_c = fixed_center,
-                       r = r )
+ 
   
   #we store the values of coexistence using the point estimates
   mean_parameters_results <- data.frame(
@@ -318,7 +313,6 @@ posterior_feasibility <- function(vero_model,
                                    "theta_mean_saavedra" = fixed_theta_SA,
                                    "Omega_mean"= fixed_feasibility,
                                     "distance_mean"=  distance_mean,
-                                    "theta_mean" = theta_mean,
                                    "feasibility_mean"= feasiblity_mean,
                                    "R_mean"=R)
   print(mean_parameters_results)
@@ -359,8 +353,8 @@ posterior_feasibility <- function(vero_model,
           gi = gi,
           gj = gj,
           env = env )
-      
-      
+      print("this particula alpha matrix is")
+      print(alpha)
       if (env) {
         r1 <- vero_post$env_growth[rows]
         r2 <- trcy_post$env_growth[rows]
@@ -371,51 +365,50 @@ posterior_feasibility <- function(vero_model,
       }
       
       r_post <- c(r1,r2)
-      
+    print("the growth rate vectir is")
+        print(r_post)
      #we determine R for every alpha matrix
       R_post <- determine_radius(alpha = alpha, 
                                  Ni_max = Ni_max,
-                                 Nj_max = Nj_max)
-   
-     
-     
+                                Nj_max = Nj_max)
+      print("Radius is")
+      print(R_post)
+      #and the size of the feasibility domain
        omega_post <- integrate_radii(alpha = alpha,
                                      R = R_post,
                                      rconstraints = rconstraints,
                                      Nupper = Nupper )
-    
+      print("the feasibility domain is") 
+      print(omega_post)
+      
+      print("distance is")
+       distance_post <-  distance_from_limit(alpha = alpha,
+                                            R_max = R_post,
+                                            rconstraints = rconstraints, 
+                                            Nupper = Nupper,
+                                            r = r_post)
+     print(distance_post)
       #Saavedras aproximation
-      omega_post_SA <- Omega_SA(alpha = alpha)
-      centroid_post_SA <- r_centroid(alpha=alpha)
-      theta_post_SA <- theta(r_c = centroid_post_SA, 
-                             r = r_post)
-      #center of the domain
-        center_post <- r_feasible(alpha = alpha,
-                                  rconstraints = rconstraints,
-                                  Nupper = Nupper,
-                                  R_max = R_post,
-                                  make_plot = FALSE)
+       omega_post_SA <- Omega_SA(alpha = alpha)
+       centroid_post_SA <- r_centroid(alpha = alpha)
+       theta_post_SA <- theta(r_c = centroid_post_SA,
+                              r = r_post)
+     
       #are our growth rates feasible?
        feasibility_post <- check_feasibility(r= r_post,
                                              alpha = alpha,
                                              rconstraints = rconstraints,
                                              Nupper = Nupper )
-      #how far away are they from the center
-       distance_post <- calculate_distance(center = center_post,
-                                           r = r_post)
-       theta_post <- theta(r_c = center_post,
-                           r = r_post)
+      
       #all togethe
       post_results <- data.frame(
                                  "Omega_saaveda"= omega_post_SA,
                                  "theta_saavedra"= theta_post_SA,
                                  "Omega"= omega_post, 
-                                  "distance"= distance_post,
-                                 "theta" = theta_post,
+                                 "distance"= distance_post,
                                  "feasibility" = feasibility_post,
                                  "Radius" = R_post)
-   
-       print(x)
+    
       return(post_results)
       
     }, gi = gi,

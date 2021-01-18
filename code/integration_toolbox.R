@@ -2,7 +2,7 @@
 require(tidyverse)
 require(mvtnorm)
 require(cubature)
-require(Gmedian)
+
 
 #previous functions used by saaveda et al. These  functions give the exact same result for a given alpha and R.
 Omega_SA <- function(alpha){
@@ -220,11 +220,11 @@ integrate_radii <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
 
 #Sample growth rates inside the feasibility domain to determine its median or the center of the feasibility domain
 r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALSE){
-  R_vals <- seq(0, R_max, length.out = 2000)
+  R_vals <- seq(0, R_max, length.out = 5000)
   
   #We sample values of R that are feasible to calculate their median, or the area in the center
   r_sample <- t(sapply(
-    seq_len(1000),
+    seq_len(8000),
     function(x,R_vals,alpha,rconstraints,Nupper){
       while(TRUE){
         R <- sample(R_vals,1)
@@ -309,13 +309,6 @@ check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
     }
     }
   
-}
-
-
-#How far away are the observed growth rates from the center of the feasiblity domain?
-calculate_distance<-function(center, r){
-  dist<- sqrt((r[1]- center[1])^2 + (r[2]- center[2])^2)
-  return(dist)
 }
 
 

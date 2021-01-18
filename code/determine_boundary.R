@@ -1,7 +1,7 @@
 require("sp")
 require("SpatialGraph")
 require("tidyverse")
-source("code/integration_toolbox.R")
+
 
 #This function determines the boundary of feasibility for a vector of angle theta
 # R_max is the maximum radius calculated for a particular combo of constraints and alpha matrix
@@ -50,6 +50,8 @@ feasibility_boundary <- function(theta,
 
 
 # this function iteraties over a series of thetas to determine the shape and bounds of the feasibility domain
+
+
 feasibility_shape<-function( alpha, 
                              R_max,
                              rconstraints=NULL,
@@ -59,35 +61,47 @@ feasibility_shape<-function( alpha,
   
   #we apply the feasibility_boundary function to a set of thetas
   bound <- lapply(thetas, function(t,
-                                    alpha,
-                                    R_max, 
-                                    rconstraints= rconstraints,
-                                    Nupper= Nupper){
-     bounded_points  <- feasibility_boundary(theta = t,
-                                             alpha = alpha,
-                                             R_max =  R_max,
-                                             rconstraints =  rconstraints,
-                                             Nupper= Nupper)
-     return(bounded_points)
+                                   alpha,
+                                   R_max, 
+                                   rconstraints= rconstraints,
+                                   Nupper= Nupper){
+    
+    bounded_points  <- feasibility_boundary(theta = t,
+                                            alpha = alpha,
+                                            R_max =  R_max,
+                                            rconstraints =  rconstraints,
+                                            Nupper= Nupper)
+   
+    return(bounded_points)
     
     
-                                            
+    
   }, alpha=alpha,
   R_max =  R_max,
   rconstraints =  rconstraints,
   Nupper= Nupper)
   
   shape <- do.call(rbind, bound)
-   
-  #we determine the boundary of the points
-  coord_points <- chull(x = shape[,"ri"], y=shape[,"rj"]) 
-  #we add the first point to complete the polygon
-  coord_points<- c(coord_points, coord_points[1])
-  shape_bounds <- shape[coord_points,]
+  #we check if there is actually an area that is detecte
+  nn <- nrow(shape)
   
-  return(shape_bounds)
+  if(nn==0){
+    shape[1,"ri"] <- 0
+    shape[1,"rj"]<- 0
+    shape[2,"ri"] <- 0
+    shape[2,"rj"]<- 0
+    return(shape)
+  }else{
+    #we determine the boundary of the points
+    coord_points <- chull(x = shape[,"ri"], y=shape[,"rj"]) 
+    #we add the first point to complete the polygon
+    coord_points<- c(coord_points, coord_points[1])
+    shape_bounds <- shape[coord_points,]
+    return(shape_bounds)
+  }
+  
+  
 }
-
 
 #function that returns the shortest distance from the point defined by the growth rates and 
 #the bounds of the feasibility domain
@@ -99,12 +113,13 @@ shortest_distance<-function(r, shape){
   distances <- c()
   cc <- c()
   for( i in 1:N){
-    
+    # points that define the line
     p0 <- c(shape[i,]$ri, shape[i,]$rj)
     p1 <- c(shape[i+1,]$ri, shape[i+1,]$rj)
     
     line_matrix <- rbind(p0,p1) %>% as.matrix()
     r <- as.matrix(r) %>% t
+    #we get the shortest distance from the point to the line, which is the distance between the point and the perpendicula projections of th eline
     dist<- SpatialGraph::pointLineD(xy = line_matrix,
                                     xyp = r )
     dist <- dist$d
@@ -122,6 +137,7 @@ shortest_distance<-function(r, shape){
     
   }
   
+  #and we return which distance is the shortest
   minimum_distance <- distances[which(distances$dist==min(distances$dist)),]
   # points(r[1], r[2], col="blue", pch=20)
   # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),

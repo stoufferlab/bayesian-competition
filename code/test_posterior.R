@@ -2,6 +2,7 @@ source("code/read_models.R")
 source("code/integration_toolbox.R")
 source("code/model_toolbox.R")
 source("code/determine_radius.R")
+source("code/determine_boundary.R")
 
 gi<-.372
 si<-.556
@@ -20,8 +21,6 @@ ptm <- proc.time()
                               Nj = 1e4,
                               env = FALSE,
                               make_plot = TRUE)
-
-
 
 
 

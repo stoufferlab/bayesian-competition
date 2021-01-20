@@ -108,15 +108,18 @@ feasibility_shape<-function( alpha,
 #r is a vector of growth rates
 #shape is the bounds of the feasibility domain, defined by the funciton feasibility_shape
 
-shortest_distance<-function(r, shape){
+shortest_distance<-function(r, 
+                            shape,
+                            feasibility){
   N <- nrow(shape) -1
   distances <- c()
   cc <- c()
+  #for every line defined by two points, we calculate the distance of our growth rates to it 
   for( i in 1:N){
     # points that define the line
     p0 <- c(shape[i,]$ri, shape[i,]$rj)
     p1 <- c(shape[i+1,]$ri, shape[i+1,]$rj)
-    
+    #we make everything a matrix
     line_matrix <- rbind(p0,p1) %>% as.matrix()
     r <- as.matrix(r) %>% t
     #we get the shortest distance from the point to the line, which is the distance between the point and the perpendicula projections of th eline
@@ -139,13 +142,19 @@ shortest_distance<-function(r, shape){
   
   #and we return which distance is the shortest
   minimum_distance <- distances[which(distances$dist==min(distances$dist)),]
+  
+  #But it matters if you are inside or outside the feasibility domain
+  if(feasibility ==1 ){
+    return(min(distances$dist))
+  }else{
+    return(-min(distances$dist))
+  }
+  
   # points(r[1], r[2], col="blue", pch=20)
   # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
   #       y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]), 
   #       lwd=2, 
   #       col="darkgoldenrod")
- return(min(distances$dist))
-  #return(minimum_distance)
 }
 
 
@@ -156,14 +165,16 @@ distance_from_limit <- function(alpha,
                                 R_max,
                                 rconstraints=NULL,
                                 Nupper=NULL,
-                                r){
+                                r,
+                                feasibility){
   shape <- feasibility_shape(alpha = alpha,
                              R_max = R_max,
                              rconstraints = rconstraints, 
                              Nupper = Nupper)
   
   distance <- shortest_distance(r = r,
-                                shape = shape)
+                                shape = shape,
+                                feasibility = feasibility)
   return(distance)
 }
 

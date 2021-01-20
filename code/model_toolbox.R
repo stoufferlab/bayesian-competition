@@ -292,19 +292,23 @@ posterior_feasibility <- function(vero_model,
    fixed_centroid_SA <- r_centroid(mean_alpha_matrix)
    fixed_theta_SA <-theta(r_c = fixed_centroid_SA,
                           r =r)
+   #check if our growth rates are feasible
+   feasiblity_mean <- check_feasibility(
+     r = r,
+     alpha = mean_alpha_matrix,
+     rconstraints = rconstraints,
+     Nupper = Nupper )
+   
+   
   # ou estimation of the distance from the bounds
   distance_mean<-  distance_from_limit(alpha = mean_alpha_matrix,
                        R_max = R,
                        rconstraints = rconstraints, 
                        Nupper = Nupper,
-                       r = r)
+                       r = r,
+                       feasibility = feasiblity_mean)
  
-  #check if our growth rates are feasible
-    feasiblity_mean <- check_feasibility(
-      r = r,
-      alpha = mean_alpha_matrix,
-      rconstraints = rconstraints,
-      Nupper = Nupper )
+ 
  
   
   #we store the values of coexistence using the point estimates
@@ -338,8 +342,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 1000), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 1000), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 200), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 200), ]
     
     
     #to iterate over rows without using a loop
@@ -381,12 +385,19 @@ posterior_feasibility <- function(vero_model,
       print("the feasibility domain is") 
       print(omega_post)
       
+      #are our growth rates feasible?
+      feasibility_post <- check_feasibility(r= r_post,
+                                            alpha = alpha,
+                                            rconstraints = rconstraints,
+                                            Nupper = Nupper )
+      
       print("distance is")
        distance_post <-  distance_from_limit(alpha = alpha,
                                             R_max = R_post,
                                             rconstraints = rconstraints, 
                                             Nupper = Nupper,
-                                            r = r_post)
+                                            r = r_post,
+                                            feasibility = feasibility_post)
      print(distance_post)
       #Saavedras aproximation
        omega_post_SA <- Omega_SA(alpha = alpha)
@@ -394,11 +405,7 @@ posterior_feasibility <- function(vero_model,
        theta_post_SA <- theta(r_c = centroid_post_SA,
                               r = r_post)
      
-      #are our growth rates feasible?
-       feasibility_post <- check_feasibility(r= r_post,
-                                             alpha = alpha,
-                                             rconstraints = rconstraints,
-                                             Nupper = Nupper )
+
       
       #all togethe
       post_results <- data.frame(

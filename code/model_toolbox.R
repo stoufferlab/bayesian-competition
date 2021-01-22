@@ -244,7 +244,6 @@ posterior_feasibility <- function(vero_model,
     gj = gj,
     env = env)
   
-
   
   #as well as r1 (vero's growth rate)
   vero_growth <- get_fixed_growth(
@@ -277,52 +276,55 @@ posterior_feasibility <- function(vero_model,
                         Ni_max = Ni_max,
                         Nj_max = Nj_max)
   
-
+  
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
   
-    fixed_feasibility <- integrate_radii(
-      alpha = mean_alpha_matrix,
-      R = R,
-      rconstraints = rconstraints,
-      Nupper = Nupper)
-
+  fixed_omega <- integrate_radii(
+    alpha = mean_alpha_matrix,
+    R = R,
+    rconstraints = rconstraints,
+    Nupper = Nupper)
+  
   
   #Saaveda et al. estimation, to compare
-   fixed_feasibility_SA <- Omega_SA(alpha = mean_alpha_matrix)
-   fixed_centroid_SA <- r_centroid(mean_alpha_matrix)
-   fixed_theta_SA <-theta(r_c = fixed_centroid_SA,
-                          r =r)
-   #check if our growth rates are feasible
-   feasiblity_mean <- check_feasibility(
-     r = r,
-     alpha = mean_alpha_matrix,
-     rconstraints = rconstraints,
-     Nupper = Nupper )
-   
-   
+  fixed_omega_SA <- Omega_SA(alpha = mean_alpha_matrix)
+  fixed_centroid_SA <- r_centroid(mean_alpha_matrix)
+  fixed_theta_SA <- theta(r_c = fixed_centroid_SA,
+                          r = r)
+  fixed_feasibility_SA <- test_feasibility_saavedra(alpha = mean_alpha_matrix,
+                                                    r = r)
+  #check if our growth rates are feasible
+  fixed_feasiblity <- check_feasibility(
+    r = r,
+    alpha = mean_alpha_matrix,
+    rconstraints = rconstraints,
+    Nupper = Nupper )
+  
+  
   # ou estimation of the distance from the bounds
-  distance_mean<-  distance_from_limit(alpha = mean_alpha_matrix,
-                       R_max = R,
-                       rconstraints = rconstraints, 
-                       Nupper = Nupper,
-                       r = r,
-                       feasibility = feasiblity_mean)
- 
- 
- 
+  fixed_distance<-  distance_from_limit(alpha = mean_alpha_matrix,
+                                        R_max = R,
+                                        rconstraints = rconstraints, 
+                                        Nupper = Nupper,
+                                        r = r,
+                                        feasibility = fixed_feasiblity)
+  
+  
+  
   
   #we store the values of coexistence using the point estimates
   mean_parameters_results <- data.frame(
-                                   "Omega_mean_saaveda"= fixed_feasibility_SA,
-                                   "theta_mean_saavedra" = fixed_theta_SA,
-                                   "Omega_mean"= fixed_feasibility,
-                                    "distance_mean"=  distance_mean,
-                                   "feasibility_mean"= feasiblity_mean,
-                                   "R_mean"=R)
+    "Omega_mean_saaveda"= fixed_omega_SA,
+    "theta_mean_saavedra" = fixed_theta_SA,
+    "feasibility_mean_saavedra" = fixed_feasibility_SA,
+    "Omega_mean"= fixed_omega,
+    "distance_mean"=  fixed_distance,
+    "feasibility_mean"= fixed_feasiblity,
+    "R_mean"=R)
   print(mean_parameters_results)
   
   #######NOW for the posterior parameters#################################
-
+  
   
   # we extract the posterior parameter values and growwth rates
   vero_post <- posterior_parameters(model = vero_model,
@@ -342,8 +344,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 200), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 200), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 1000), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 1000), ]
     
     
     #to iterate over rows without using a loop
@@ -352,11 +354,11 @@ posterior_feasibility <- function(vero_model,
     posterior_parameters_results<-lapply(x,function(rows,gi,gj,rconstraints, Nupper){
       
       alpha  <- alpha_matrix(
-          vero_row = vero_post[rows, ],
-          trcy_row = trcy_post[rows, ],
-          gi = gi,
-          gj = gj,
-          env = env )
+        vero_row = vero_post[rows, ],
+        trcy_row = trcy_post[rows, ],
+        gi = gi,
+        gj = gj,
+        env = env )
       print("this particula alpha matrix is")
       print(alpha)
       if (env) {
@@ -369,19 +371,19 @@ posterior_feasibility <- function(vero_model,
       }
       
       r_post <- c(r1,r2)
-    print("the growth rate vectir is")
-        print(r_post)
-     #we determine R for every alpha matrix
+      print("the growth rate vectir is")
+      print(r_post)
+      #we determine R for every alpha matrix
       R_post <- determine_radius(alpha = alpha, 
                                  Ni_max = Ni_max,
-                                Nj_max = Nj_max)
+                                 Nj_max = Nj_max)
       print("Radius is")
       print(R_post)
       #and the size of the feasibility domain
-       omega_post <- integrate_radii(alpha = alpha,
-                                     R = R_post,
-                                     rconstraints = rconstraints,
-                                     Nupper = Nupper )
+      omega_post <- integrate_radii(alpha = alpha,
+                                    R = R_post,
+                                    rconstraints = rconstraints,
+                                    Nupper = Nupper )
       print("the feasibility domain is") 
       print(omega_post)
       
@@ -392,46 +394,47 @@ posterior_feasibility <- function(vero_model,
                                             Nupper = Nupper )
       
       print("distance is")
-       distance_post <-  distance_from_limit(alpha = alpha,
+      distance_post <-  distance_from_limit(alpha = alpha,
                                             R_max = R_post,
                                             rconstraints = rconstraints, 
                                             Nupper = Nupper,
                                             r = r_post,
                                             feasibility = feasibility_post)
-     print(distance_post)
+      print(distance_post)
       #Saavedras aproximation
-       omega_post_SA <- Omega_SA(alpha = alpha)
-       centroid_post_SA <- r_centroid(alpha = alpha)
-       theta_post_SA <- theta(r_c = centroid_post_SA,
-                              r = r_post)
-     
-
+      omega_post_SA <- Omega_SA(alpha = alpha)
+      centroid_post_SA <- r_centroid(alpha = alpha)
+      theta_post_SA <- theta(r_c = centroid_post_SA,
+                             r = r_post)
+      feasibility_post_SA <- test_feasibility_saavedra(alpha = alpha, 
+                                                       r = r_post)
       
       #all togethe
       post_results <- data.frame(
-                                 "Omega_saaveda"= omega_post_SA,
-                                 "theta_saavedra"= theta_post_SA,
-                                 "Omega"= omega_post, 
-                                 "distance"= distance_post,
-                                 "feasibility" = feasibility_post,
-                                 "Radius" = R_post)
-    
+        "Omega_saaveda"= omega_post_SA,
+        "theta_saavedra"= theta_post_SA,
+        "feasibility_saaveda"= feasibility_post_SA,
+        "Omega"= omega_post, 
+        "distance"= distance_post,
+        "feasibility" = feasibility_post,
+        "Radius" = R_post)
+      
       return(post_results)
       
     }, gi = gi,
     gj = gj,
     rconstraints = rconstraints, 
     Nupper = Nupper)
-   
+    
     posterior_parameters_results <- do.call(rbind, posterior_parameters_results)
     
     all_results <- cbind(mean_parameters_results, posterior_parameters_results)
     all_results[,"vero_model"] <- vero_model$name
     all_results[,"trcy_model"] <- trcy_model$name
-   # print(all_results)
-     file <- paste0(name,".RDS")
+    # print(all_results)
+    file <- paste0(name,".RDS")
     # print(file)
     saveRDS(object = all_results,file = paste0(name,".RDS"))
     return(all_results) 
   }
-    }
+}

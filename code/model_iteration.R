@@ -7,13 +7,14 @@ library(tidyverse)
 
 #We source everything known to human kind...
 
-source("code/gg_theme.R")
+
 source("code/read_models.R")
 source("code/model_toolbox.R")
 source("code/model_combo.R")
 source("code/integration_toolbox.R")
 source("code/model_toolbox.R")
 source("code/determine_radius.R")
+source("code/determine_boundary.R")
 
 
 #survival and germination for Vero (i) and Trcy(j)
@@ -40,4 +41,7 @@ model_grid_sunny<- combined_models(vero_models = vero_models,
                                    Ni = 1e4,
                                    Nj =1e4,
                                    env=FALSE,
-                                   make_plot = TRUE)
+                                   make_plot = FALSE)
+
+saveRDS(model_grid_sunny,
+        file = "results_sunny_22jan21.RDS")

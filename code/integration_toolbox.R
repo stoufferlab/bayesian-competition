@@ -82,7 +82,7 @@ theta <- function(r_c,r){
   out <- acos(sum(r_c*r)/(sqrt(sum(r^2))*sqrt(sum(r_c^2))))*180/pi
   return(out)
 }
-test_feasibility <- function(alpha,r){
+test_feasibility_saavedra <- function(alpha,r){
   out <- prod(solve(alpha,r)>0)
   return(out)
 }

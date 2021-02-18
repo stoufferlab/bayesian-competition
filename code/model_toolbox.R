@@ -301,16 +301,13 @@ posterior_feasibility <- function(vero_model,
     Nupper = Nupper )
   
   
-  # ou estimation of the distance from the bounds
+  # estimation of the distance from the center of the polygon to the nearest boundary,
+  # and from the growth rates to the nearest boundary
   fixed_distance<-  distance_from_limit(alpha = mean_alpha_matrix,
                                         R_max = R,
                                         rconstraints = rconstraints, 
                                         Nupper = Nupper,
-                                        r = r,
-                                        feasibility = fixed_feasiblity)
-  
-  
-  
+                                        r = r)
   
   #we store the values of coexistence using the point estimates
   mean_parameters_results <- data.frame(
@@ -318,7 +315,8 @@ posterior_feasibility <- function(vero_model,
     "theta_mean_saavedra" = fixed_theta_SA,
     "feasibility_mean_saavedra" = fixed_feasibility_SA,
     "Omega_mean"= fixed_omega,
-    "distance_mean"=  fixed_distance,
+    "distance_mean_center"=  fixed_distance$center_distance,
+    "distance_mean_growth"= fixed_distance$growth_distance,
     "feasibility_mean"= fixed_feasiblity,
     "R_mean"=R)
   print(mean_parameters_results)
@@ -344,8 +342,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 1000), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 1000), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 100), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 100), ]
     
     
     #to iterate over rows without using a loop
@@ -398,8 +396,7 @@ posterior_feasibility <- function(vero_model,
                                             R_max = R_post,
                                             rconstraints = rconstraints, 
                                             Nupper = Nupper,
-                                            r = r_post,
-                                            feasibility = feasibility_post)
+                                            r = r_post)
       print(distance_post)
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
@@ -415,7 +412,8 @@ posterior_feasibility <- function(vero_model,
         "theta_saavedra"= theta_post_SA,
         "feasibility_saaveda"= feasibility_post_SA,
         "Omega"= omega_post, 
-        "distance"= distance_post,
+        "distance_center"=  distance_post$center_distance,
+        "distance_growth"= distance_post$growth_distance,
         "feasibility" = feasibility_post,
         "Radius" = R_post)
       

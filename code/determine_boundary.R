@@ -1,9 +1,10 @@
 require("sp")
 require("SpatialGraph")
 require("tidyverse")
+require("polylabelr")
 
 
-#This function determines the boundary of feasibility for a vector of angle theta
+#This function determines the boundary of feasibility domainfor a vector of angle theta and a Radius = R_max
 # R_max is the maximum radius calculated for a particular combo of constraints and alpha matrix
 feasibility_boundary <- function(theta,
                                  alpha, 
@@ -103,37 +104,68 @@ feasibility_shape<-function( alpha,
   
 }
 
+
+#function to get the euclidean distance between to points
+calculate_distance <- function(p1,p2){
+  distance <- sqrt( (p2[1]-p1[1])^2 + (p2[2] - p1[2])^2   )
+  return(distance)
+}
+
 #function that returns the shortest distance from the point defined by the growth rates and 
 #the bounds of the feasibility domain
 #r is a vector of growth rates
 #shape is the bounds of the feasibility domain, defined by the funciton feasibility_shape
 
+
 shortest_distance<-function(r, 
                             shape,
-                            feasibility){
+                            col){
   N <- nrow(shape) -1
   distances <- c()
   cc <- c()
   #for every line defined by two points, we calculate the distance of our growth rates to it 
-  for( i in 1:N){
+  for(i in 1:N) {
     # points that define the line
-    p0 <- c(shape[i,]$ri, shape[i,]$rj)
-    p1 <- c(shape[i+1,]$ri, shape[i+1,]$rj)
-    #we make everything a matrix
-    line_matrix <- rbind(p0,p1) %>% as.matrix()
-    r <- as.matrix(r) %>% t
-    #we get the shortest distance from the point to the line, which is the distance between the point and the perpendicula projections of th eline
-    dist<- SpatialGraph::pointLineD(xy = line_matrix,
-                                    xyp = r )
-    dist <- dist$d
+    p0 <- c(shape[i, ]$ri, shape[i, ]$rj)
+    p1 <- c(shape[i + 1, ]$ri, shape[i + 1, ]$rj)
     
-    data <- data.frame("distance"= dist,
-                       #"distance_point1"= dist_pt1,
-                       #"distance_point2"= dist_pt2,
-                       "p1x"=p0[1],
-                       "p1y"=p0[2],
-                       "p2x"=p1[1],
-                       "p2y"=p1[2])
+    #we make everything a matrix
+    line_matrix <- rbind(p0, p1) %>% as.matrix()
+    r <- as.matrix(r) %>% t
+    
+    #we get the shortest distance from the point to the line, which is the distance between the point and the perpendicula projections of the line
+    dist <- SpatialGraph::pointLineD(xy = line_matrix,
+                                     xyp = r)
+    
+    
+    # does the perpendicular projection of the points crosses the segment or not
+    cross <- dist$cross
+    
+    #if it does not, then the shortest distance is the distance to one of the edges of the line
+    if (cross == 0) {
+      dist_p0 <- calculate_distance(p1 = p0,
+                                    p2 = r)
+      
+      dist_p1 <- calculate_distance(p1 = p1,
+                                    p2 = r)
+      dist_m <-  ifelse(dist_p0 > dist_p1,
+                        dist_p1,
+                        dist_p0)
+    } else{
+      #if it does, then the shortest distance is to the perpendicular projection of the line
+      dist_m <- dist$d
+    }
+    
+    
+    data <- data.frame(
+      "distance" = dist_m,
+      #"distance_point1"= dist_pt1,
+      #"distance_point2"= dist_pt2,
+      "p1x" = p0[1],
+      "p1y" = p0[2],
+      "p2x" = p1[1],
+      "p2y" = p1[2]
+    )
     
     
     distances <- rbind(distances, data)
@@ -141,22 +173,18 @@ shortest_distance<-function(r,
   }
   
   #and we return which distance is the shortest
-  minimum_distance <- distances[which(distances$dist==min(distances$dist)),]
+  minimum_distance <-
+    distances[which(distances$dist == min(distances$distanc)), ]
+  
+  # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
+  #       y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]),
+  #       lwd=3,
+  #       col=col)
+  # pch=20)
   
   #But it matters if you are inside or outside the feasibility domain
-  if(feasibility ==1 ){
-    return(min(distances$dist))
-  }else{
-    return(-min(distances$dist))
-  }
-  
-  # points(r[1], r[2], col="blue", pch=20)
-  # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
-  #       y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]), 
-  #       lwd=2, 
-  #       col="darkgoldenrod")
+  return(minimum_distance$distance)
 }
-
 
 
 #wrapper of the functions defined above for it's usefull implementation
@@ -165,17 +193,27 @@ distance_from_limit <- function(alpha,
                                 R_max,
                                 rconstraints=NULL,
                                 Nupper=NULL,
-                                r,
-                                feasibility){
+                                r){
   shape <- feasibility_shape(alpha = alpha,
                              R_max = R_max,
                              rconstraints = rconstraints, 
                              Nupper = Nupper)
   
-  distance <- shortest_distance(r = r,
-                                shape = shape,
-                                feasibility = feasibility)
-  return(distance)
+  #the center of the polygon
+  center <- poi(x = shape$ri,
+                y = shape$rj)
+  
+  #we get the shortest distance from the center of the polygon to an edge
+  center_distance <- shortest_distance(r= c(center$x, center$y),
+                                       shape = shape)
+  #we get the shortest distance from our growth rates to an edge
+  growth_distance <- shortest_distance(r = r,
+                                       shape = shape)
+  
+  results <- data.frame("center_distance" =center_distance,
+                        "growth_distance"= growth_distance)
+  
+  return(results)
 }
 
 

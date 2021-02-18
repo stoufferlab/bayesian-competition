@@ -40,7 +40,7 @@ calculate_area<-function(R=1, alpha){
   
   #their difference
   final_theta <- abs(theta1 - theta2)
-   
+  
   #The final angle in radians
   angle <- (2 *pi) - final_theta
   
@@ -58,15 +58,15 @@ calculate_area<-function(R=1, alpha){
   
   #The area of the feasibility domain
   feasibility_area <-area_circle- area_sector
- 
- 
- ## but it is not the final area we want, we want the proportion of feasible space
- # the maximum space is the area of the circle
- 
- proportion_area <- feasibility_area / area_circle
- 
- 
- return(proportion_area)
+  
+  
+  ## but it is not the final area we want, we want the proportion of feasible space
+  # the maximum space is the area of the circle
+  
+  proportion_area <- feasibility_area / area_circle
+  
+  
+  return(proportion_area)
   
 }
 # And the characteristics of the feasibility domain
@@ -93,18 +93,19 @@ test_feasibility_saavedra <- function(alpha,r){
 
 # Function to get the inverse of a 2 by 2 matrix to save time
 inverse_matrix<-function(alpha){
-   
-  deteminant_alpha <- (alpha[1,1] * alpha[2,2]) - (alpha[2,1] * alpha[1,2])
-   
- inverse_det  <- 1 / deteminant_alpha
+  
+  deteminant_alpha <-
+    (alpha[1, 1] * alpha[2, 2]) - (alpha[2, 1] * alpha[1, 2])
+  
+  inverse_det  <- 1 / deteminant_alpha
   
   
-  adjugate <- matrix( NA,nrow=2,ncol=2)                  
-  adjugate[1,1] <- alpha[2,2]
-  adjugate[2,2] <- alpha[1,1]
+  adjugate <- matrix(NA, nrow = 2, ncol = 2)
+  adjugate[1, 1] <- alpha[2, 2]
+  adjugate[2, 2] <- alpha[1, 1]
   
-  adjugate[1,2] <- -alpha[1,2]
-  adjugate[2,1] <- -alpha[2,1]
+  adjugate[1, 2] <- -alpha[1, 2]
+  adjugate[2, 1] <- -alpha[2, 1]
   
   
   ii <- inverse_det * adjugate
@@ -150,16 +151,16 @@ feasibility_theta <- function(theta_seq,alpha, R,rconstraints=NULL,Nupper=NULL){
       if(!N_feasible){
         return(0)
       }else{
-         if (!is.null(Nupper)) {
-           #we check that abundances are below the max abundance
-           N_good <- (N <= Nupper) 
-           N_good <- all(N_good)
-           
-         } else{
-           N_good <- TRUE
-       }
-         return(N_good)
-       
+        if (!is.null(Nupper)) {
+          #we check that abundances are below the max abundance
+          N_good <- (N <= Nupper) 
+          N_good <- all(N_good)
+          
+        } else{
+          N_good <- TRUE
+        }
+        return(N_good)
+        
       }
       
     }
@@ -177,20 +178,20 @@ integrate_theta <-function( R_seq,alpha,rconstraints=NULL,Nupper=NULL ) {
   thetas <- seq(0 , 2*pi, length.out = 1000)
   
   results <- matrix(sapply(R_seq, function(R, alpha, rconstraints, Nupper){
-     
-     area<- feasibility_theta(theta_seq = thetas,
-                              alpha = alpha,
-                              R = R,
-                              rconstraints = rconstraints,
-                              Nupper= Nupper)
- 
+    
+    area<- feasibility_theta(theta_seq = thetas,
+                             alpha = alpha,
+                             R = R,
+                             rconstraints = rconstraints,
+                             Nupper= Nupper)
+    
     #print(sum(area)/length(thetas))
     return(sum(area)/length(thetas))
   }, alpha=alpha,
   rconstraints = rconstraints,
   Nupper = Nupper))
   
- # results<- as.matrix(results)
+  # results<- as.matrix(results)
   
   return(results)
   
@@ -198,21 +199,21 @@ integrate_theta <-function( R_seq,alpha,rconstraints=NULL,Nupper=NULL ) {
 
 #We integrate over different values of R to check how constraints affect the feasibility domain as R increases
 integrate_radii <- function(alpha, R ,rconstraints=NULL,Nupper=NULL){
-
-   multiple_R <- hcubature(f=integrate_theta,
-                      lowerLimit  = 0, 
-                      upperLimit  = R,
-                      vectorInterface = TRUE,
-                      tol = 1e-3,
-                      alpha = alpha,
-                      rconstraints= rconstraints,
-                      Nupper= Nupper)
-   
-   return(multiple_R$integral/R)
-   
-   
-
-
+  
+  multiple_R <- hcubature(f=integrate_theta,
+                          lowerLimit  = 0, 
+                          upperLimit  = R,
+                          vectorInterface = TRUE,
+                          tol = 1e-3,
+                          alpha = alpha,
+                          rconstraints= rconstraints,
+                          Nupper= Nupper)
+  
+  return(multiple_R$integral/R)
+  
+  
+  
+  
 }
 
 
@@ -224,7 +225,7 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
   
   #We sample values of R that are feasible to calculate their median, or the area in the center
   r_sample <- t(sapply(
-    seq_len(8000),
+    seq_len(100),
     function(x,R_vals,alpha,rconstraints,Nupper){
       while(TRUE){
         R <- sample(R_vals,1)
@@ -246,8 +247,8 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
   )) %>% as.data.frame()
   
   
-  medianR <- Gmedian(r_sample[,c("ri","rj")])
-
+  #medianR <- Gmedian(r_sample[,c("ri","rj")])
+  
   if(make_plot){
     plot(0,0,
          xlim=c(-range(R_vals)[2],range(R_vals)[2]),
@@ -264,14 +265,14 @@ r_feasible<-function(alpha, rconstraints=NULL, Nupper=NULL,R_max ,make_plot=FALS
           }
     )
   }
-  return(medianR)
- # return(r_sample)
+ # return(medianR)
+  # return(r_sample)
 }
 
 #Check if ourparticular combination of growth rates is feasible
 check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
   inverse_alpha <- inverse_matrix(alpha)
- 
+  
   if (!is.null(rconstraints)) {
     r_good <- (r >= rconstraints$lower) & (r <= rconstraints$upper)
     r_feasible <- all(r_good)
@@ -307,7 +308,7 @@ check_feasibility <- function(r,alpha,rconstraints=NULL,Nupper=NULL){
       return(N_good)
       
     }
-    }
+  }
   
 }
 

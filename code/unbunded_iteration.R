@@ -144,8 +144,8 @@ posterior_feasibility_unbounded <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 10), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 1000), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 1000), ]
     
     
     #to iterate over rows without using a loop

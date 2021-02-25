@@ -342,23 +342,24 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 100), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 100), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 10), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
     
     
     #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post),1) %>% as.list()
+    print(length(x))
     
     posterior_parameters_results<-lapply(x,function(rows,gi,gj,rconstraints, Nupper){
-      
+      print("posterior distribution no.")
+      print(rows)
       alpha  <- alpha_matrix(
         vero_row = vero_post[rows, ],
         trcy_row = trcy_post[rows, ],
         gi = gi,
         gj = gj,
         env = env )
-      print("this particula alpha matrix is")
-      print(alpha)
+    
       if (env) {
         r1 <- vero_post$env_growth[rows]
         r2 <- trcy_post$env_growth[rows]
@@ -369,21 +370,20 @@ posterior_feasibility <- function(vero_model,
       }
       
       r_post <- c(r1,r2)
-      print("the growth rate vectir is")
-      print(r_post)
+     
+  
       #we determine R for every alpha matrix
       R_post <- determine_radius(alpha = alpha, 
                                  Ni_max = Ni_max,
                                  Nj_max = Nj_max)
-      print("Radius is")
-      print(R_post)
+   
+     
       #and the size of the feasibility domain
       omega_post <- integrate_radii(alpha = alpha,
                                     R = R_post,
                                     rconstraints = rconstraints,
                                     Nupper = Nupper )
-      print("the feasibility domain is") 
-      print(omega_post)
+  
       
       #are our growth rates feasible?
       feasibility_post <- check_feasibility(r= r_post,
@@ -391,13 +391,13 @@ posterior_feasibility <- function(vero_model,
                                             rconstraints = rconstraints,
                                             Nupper = Nupper )
       
-      print("distance is")
+     
       distance_post <-  distance_from_limit(alpha = alpha,
                                             R_max = R_post,
                                             rconstraints = rconstraints, 
                                             Nupper = Nupper,
                                             r = r_post)
-      print(distance_post)
+    
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
       centroid_post_SA <- r_centroid(alpha = alpha)
@@ -415,7 +415,13 @@ posterior_feasibility <- function(vero_model,
         "distance_center"=  distance_post$center_distance,
         "distance_growth"= distance_post$growth_distance,
         "feasibility" = feasibility_post,
-        "Radius" = R_post)
+        "Radius" = R_post,
+        "r1" = r1,
+        "r2"= r2,
+        "alpha11"= alpha[1,1],
+        "alpha21"= alpha[2,1],
+        "alpha12"= alpha[1,2],
+        "alpha22"= alpha[2,2])
       
       return(post_results)
       

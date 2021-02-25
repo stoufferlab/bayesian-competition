@@ -57,7 +57,7 @@ feasibility_shape<-function( alpha,
                              R_max,
                              rconstraints=NULL,
                              Nupper=NULL){
-  N <- 100
+  N <- 500
   thetas <- seq(0 , 2*pi, length.out = N) %>% as.list()
   
   #we apply the feasibility_boundary function to a set of thetas
@@ -83,15 +83,13 @@ feasibility_shape<-function( alpha,
   Nupper= Nupper)
   
   shape <- do.call(rbind, bound)
-  #we check if there is actually an area that is detecte
+  #we check if there is actually an area that is detected
   nn <- nrow(shape)
   
   if(nn==0){
-    shape[1,"ri"] <- 0
-    shape[1,"rj"]<- 0
-    shape[2,"ri"] <- 0
-    shape[2,"rj"]<- 0
+    
     return(shape)
+    
   }else{
     #we determine the boundary of the points
     coord_points <- chull(x = shape[,"ri"], y=shape[,"rj"]) 
@@ -118,10 +116,16 @@ calculate_distance <- function(p1,p2){
 
 
 shortest_distance<-function(r, 
-                            shape,
-                            col){
+                            shape){
+  
+  nn <- nrow(shape)
+  if(nn == 0){
+    #if there is no shape there is no minimum distance from the shape
+    return(0)
+  }else{
+    
   N <- nrow(shape) -1
-  distances <- c()
+  data_dist <- c()
   cc <- c()
   #for every line defined by two points, we calculate the distance of our growth rates to it 
   for(i in 1:N) {
@@ -158,7 +162,7 @@ shortest_distance<-function(r,
     
     
     data <- data.frame(
-      "distance" = dist_m,
+      "distance_from_edge" = dist_m,
       #"distance_point1"= dist_pt1,
       #"distance_point2"= dist_pt2,
       "p1x" = p0[1],
@@ -168,22 +172,21 @@ shortest_distance<-function(r,
     )
     
     
-    distances <- rbind(distances, data)
+    data_dist <- rbind(data_dist, data)
     
   }
   
   #and we return which distance is the shortest
-  minimum_distance <-
-    distances[which(distances$dist == min(distances$distanc)), ]
-  
-  # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
-  #       y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]),
-  #       lwd=3,
-  #       col=col)
-  # pch=20)
-  
+   minimum_distance <- data_dist[which(data_dist$distance_from_edge == min(data_dist$distance_from_edge)), ]
+  # 
+  #  lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
+  #        y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]),
+  #        lwd=3,
+  #        col=col)
+
   #But it matters if you are inside or outside the feasibility domain
   return(minimum_distance$distance)
+  }
 }
 
 

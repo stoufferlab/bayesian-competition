@@ -12,7 +12,7 @@ col1 <- rethinking::col.alpha("mediumseagreen", .3)
 col2 <- rethinking::col.alpha("grey50",.9)
 
 
-integration <- ggplot(mod) +
+integration <- ggplot(test_2) +
   geom_point(
     mapping = aes(
       x = Omega,

@@ -11,7 +11,7 @@ sj<-.033
 
 ptm <- proc.time()
 
- test_2<- posterior_feasibility(vero_model = vero_bh_multispecies_poisson.rds,
+ test_2<- posterior_feasibility(vero_model = vero_lv_multispecies_poisson.rds,
                               trcy_model = trcy_bh_multispecies_poisson.rds,
                               si = si,
                               gi = gi,

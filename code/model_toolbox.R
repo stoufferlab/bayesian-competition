@@ -235,32 +235,33 @@ posterior_feasibility <- function(vero_model,
                                   make_plot = FALSE){
   #for the mean omega and theta we get the  alpha matrix for mean parameter values
   #for an environmental condition either 0 (control) or 1 (woody)
-  name <- paste0(vero_model$name, "and", trcy_model$name)
+  name <- paste0(vero_model$name, "&", trcy_model$name)
   print(name)
-  mean_alpha_matrix <- get_fixed_alphas(
+  
+  #we determine the alpha matrix for the mean parameter values
+   alpha_mean <- get_fixed_alphas(
     vero_model = vero_model,
     trcy_model = trcy_model,
     gi = gi,
     gj = gj,
     env = env)
   
-  
   #as well as r1 (vero's growth rate)
-  vero_growth <- get_fixed_growth(
+  vero_growth_mean <- get_fixed_growth(
     model = vero_model,
     s = si,
     g = gi,
     env = env)
   
   #and r2 (trcy's growth rate)
-  trcy_growth <- get_fixed_growth(
+  trcy_growth_mean <- get_fixed_growth(
     model = trcy_model,
     s = sj,
     g = gj,
     env = env)
   #store them in a vector
-  r <- c(vero_growth,
-         trcy_growth)
+  r_mean <- c(vero_growth_mean,
+         trcy_growth_mean)
   
   # Each model has its own constraints
   rconstraints <- list(
@@ -272,53 +273,53 @@ posterior_feasibility <- function(vero_model,
   Nupper <- c(i = Ni_max,
               j = Nj_max)
   #Which determine the Radius for each alpha matrix used
-  R <- determine_radius(alpha = mean_alpha_matrix,
+  R_mean <- determine_radius(alpha = alpha_mean,
                         Ni_max = Ni_max,
                         Nj_max = Nj_max)
   
-  
   # Knowing these we can calculate the feasibility domain and its center for mean parameter values
   
-  fixed_omega <- integrate_radii(
-    alpha = mean_alpha_matrix,
-    R = R,
+  omega_mean <- integrate_radii(
+    alpha = alpha_mean,
+    R = R_mean,
     rconstraints = rconstraints,
     Nupper = Nupper)
   
   
   #Saaveda et al. estimation, to compare
-  fixed_omega_SA <- Omega_SA(alpha = mean_alpha_matrix)
-  fixed_centroid_SA <- r_centroid(mean_alpha_matrix)
-  fixed_theta_SA <- theta(r_c = fixed_centroid_SA,
-                          r = r)
-  fixed_feasibility_SA <- test_feasibility_saavedra(alpha = mean_alpha_matrix,
-                                                    r = r)
+  omega_SA_mean <- Omega_SA(alpha = alpha_mean)
+  centroid_SA_mean <- r_centroid(alpha_mean)
+  theta_SA_mean <- theta(r_c = centroid_SA_mean,
+                          r = r_mean)
+  feasibility_SA_mean <- test_feasibility_saavedra(alpha = alpha_mean,
+                                                    r = r_mean)
   #check if our growth rates are feasible
-  fixed_feasiblity <- check_feasibility(
-    r = r,
-    alpha = mean_alpha_matrix,
+  feasiblity_mean <- check_feasibility(
+    r = r_mean,
+    alpha = alpha_mean,
     rconstraints = rconstraints,
     Nupper = Nupper )
   
   
   # estimation of the distance from the center of the polygon to the nearest boundary,
   # and from the growth rates to the nearest boundary
-  fixed_distance<-  distance_from_limit(alpha = mean_alpha_matrix,
-                                        R_max = R,
+   distance_mean <- distance_from_limit(alpha = alpha_mean,
+                                        R_max = R_mean,
                                         rconstraints = rconstraints, 
                                         Nupper = Nupper,
-                                        r = r)
+                                        r = r_mean,
+                                        feasibility = feasiblity_mean)
   
   #we store the values of coexistence using the point estimates
   mean_parameters_results <- data.frame(
-    "Omega_mean_saaveda"= fixed_omega_SA,
-    "theta_mean_saavedra" = fixed_theta_SA,
-    "feasibility_mean_saavedra" = fixed_feasibility_SA,
-    "Omega_mean"= fixed_omega,
-    "distance_mean_center"=  fixed_distance$center_distance,
-    "distance_mean_growth"= fixed_distance$growth_distance,
-    "feasibility_mean"= fixed_feasiblity,
-    "R_mean"=R)
+    "Omega_saavedraa_mean"= omega_SA_mean,
+    "theta_saavedra_mean" = theta_SA_mean,
+    "feasibility_saavedra_mean" = feasibility_SA_mean,
+    "Omega_mean"= omega_mean,
+    "distance_center_mean"=  distance_mean$center_distance,
+    "distance_growth_mean"=  distance_mean$growth_distance,
+    "feasibility_mean"= feasiblity_mean,
+    "R_mean"=R_mean)
   print(mean_parameters_results)
   
   #######NOW for the posterior parameters#################################
@@ -342,8 +343,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post<-vero_post[sample(nrow(vero_post), 10), ]
-    trcy_post<-trcy_post[sample(nrow(trcy_post), 10), ]
+    vero_post<-vero_post[sample(nrow(vero_post), 200), ]
+    trcy_post<-trcy_post[sample(nrow(trcy_post), 200), ]
     
     
     #to iterate over rows without using a loop
@@ -396,7 +397,8 @@ posterior_feasibility <- function(vero_model,
                                             R_max = R_post,
                                             rconstraints = rconstraints, 
                                             Nupper = Nupper,
-                                            r = r_post)
+                                            r = r_post,
+                                            feasibility = feasibility_post)
     
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)

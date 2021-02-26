@@ -42,7 +42,7 @@ feasibility_boundary <- function(theta,
                        alpha = alpha,
                        rconstraints = rconstraints,
                        Nupper = Nupper)
-  
+  #we only return the points that are inside the feasibility area
                      R_bounds <- do.call(rbind, R_boundary)
                      feasible_bounds <- filter(R_bounds, feasible ==1) 
                      return(feasible_bounds)
@@ -56,8 +56,8 @@ feasibility_boundary <- function(theta,
 feasibility_shape<-function( alpha, 
                              R_max,
                              rconstraints=NULL,
-                             Nupper=NULL){
-  N <- 500
+                             Nupper=NULL,
+                             N){
   thetas <- seq(0 , 2*pi, length.out = N) %>% as.list()
   
   #we apply the feasibility_boundary function to a set of thetas
@@ -82,13 +82,50 @@ feasibility_shape<-function( alpha,
   rconstraints =  rconstraints,
   Nupper= Nupper)
   
-  shape <- do.call(rbind, bound)
-  #we check if there is actually an area that is detected
-  nn <- nrow(shape)
+  shape <- do.call(rbind, bound) 
   
-  if(nn==0){
+  return(shape)
+  }
+ 
+  
+  
+#function to make sure we detect an area
+determine_feasibility_shape <- function(alpha, 
+                                        R_max,
+                                        rconstraints=NULL,
+                                        Nupper=NULL){
+  # first we try with wider slices to see if we detect a shape
+  shape <- feasibility_shape(alpha = alpha,
+                             R_max = R_max,
+                             rconstraints = rconstraints,
+                             Nupper = Nupper,
+                             N = 100)
+  
+
+  nn <- nrow(shape)
+  lines_in_shape <- unique(shape$theta) %>% length()
+  #if no area is detected or only a thin line, then we run it again with thinner slices
+  if(nn==0 | lines_in_shape < 2){
     
-    return(shape)
+    shape <- feasibility_shape(alpha = alpha,
+                               R_max = R_max,
+                               rconstraints = rconstraints,
+                               Nupper = Nupper,
+                               N = 500)
+    nn_thin <- nrow(shape)
+    
+    if(nn_thin == 0){
+      #if again no area is detected, we return a data frame with no rows, which can be dealt with later in the function to determine the distance
+      return(shape)
+      
+    }else{
+      #we determine the boundary of the points
+      coord_points <- chull(x = shape[,"ri"], y=shape[,"rj"]) 
+      #we add the first point to complete the polygon
+      coord_points<- c(coord_points, coord_points[1])
+      shape_bounds <- shape[coord_points,]
+      return(shape_bounds)
+    }
     
   }else{
     #we determine the boundary of the points
@@ -100,7 +137,12 @@ feasibility_shape<-function( alpha,
   }
   
   
+  
 }
+  
+
+  
+  
 
 
 #function to get the euclidean distance between to points
@@ -112,18 +154,13 @@ calculate_distance <- function(p1,p2){
 #function that returns the shortest distance from the point defined by the growth rates and 
 #the bounds of the feasibility domain
 #r is a vector of growth rates
-#shape is the bounds of the feasibility domain, defined by the funciton feasibility_shape
+#shape is the bounds of the feasibility domain, defined by the funciton determine_feasibility_shape
 
 
 shortest_distance<-function(r, 
-                            shape){
-  
-  nn <- nrow(shape)
-  if(nn == 0){
-    #if there is no shape there is no minimum distance from the shape
-    return(0)
-  }else{
-    
+                            shape,
+                            feasibility){
+
   N <- nrow(shape) -1
   data_dist <- c()
   cc <- c()
@@ -155,9 +192,12 @@ shortest_distance<-function(r,
       dist_m <-  ifelse(dist_p0 > dist_p1,
                         dist_p1,
                         dist_p0)
+      type <- "point"
+      
     } else{
       #if it does, then the shortest distance is to the perpendicular projection of the line
       dist_m <- dist$d
+      type <- "line"
     }
     
     
@@ -168,7 +208,8 @@ shortest_distance<-function(r,
       "p1x" = p0[1],
       "p1y" = p0[2],
       "p2x" = p1[1],
-      "p2y" = p1[2]
+      "p2y" = p1[2],
+      "type"= type
     )
     
     
@@ -179,14 +220,17 @@ shortest_distance<-function(r,
   #and we return which distance is the shortest
    minimum_distance <- data_dist[which(data_dist$distance_from_edge == min(data_dist$distance_from_edge)), ]
   # 
-  #  lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
-  #        y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]),
-  #        lwd=3,
-  #        col=col)
+    # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
+    #       y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]),
+    #       lwd=3,
+    #       col=2)
 
   #But it matters if you are inside or outside the feasibility domain
-  return(minimum_distance$distance)
-  }
+   if (feasibility){
+     return(minimum_distance$distance_from_edge)
+   }else{
+     return( - minimum_distance$distance_from_edge)
+   }
 }
 
 
@@ -196,27 +240,50 @@ distance_from_limit <- function(alpha,
                                 R_max,
                                 rconstraints=NULL,
                                 Nupper=NULL,
-                                r){
-  shape <- feasibility_shape(alpha = alpha,
+                                r,
+                                feasibility){
+  
+  feas <- ifelse(feasibility,1,-1)
+  shape <- determine_feasibility_shape(alpha = alpha,
                              R_max = R_max,
                              rconstraints = rconstraints, 
                              Nupper = Nupper)
+  nn <- nrow(shape)
+  lines_in_shape <- unique(shape$theta) %>% length()
+  #if there is no detectable shape
+  if(nn==0 | lines_in_shape < 2){
+    
+    distance <- calculate_distance( p1 =  r,
+                                    p2 = c(0,0))
+    distance <- distance*feas
+    results <- data.frame("center_distance" = distance,
+                          "growth_distance"= 0)
+    
+    return(results)
+  }else{
+    #if the feasibility domain is only a line, and not a volume, then we can not detect the minimum distance to a boundary
+   
+      
+      #the center of the polygon
+      center <- poi(x = shape$ri,
+                    y = shape$rj)
+      
+      #we get the shortest distance from the center of the polygon to an edge, it is always feasible
+      center_distance <- shortest_distance(r= c(center$x, center$y),
+                                           shape = shape,
+                                           feasibility = 1)
+      #we get the shortest distance from our growth rates to an edge
+      growth_distance <- shortest_distance(r = r,
+                                           shape = shape,
+                                           feasibility = feasibility)
+      
+      results <- data.frame("center_distance" =center_distance,
+                            "growth_distance"= growth_distance)
+      
+      return(results)
+      
+    }
   
-  #the center of the polygon
-  center <- poi(x = shape$ri,
-                y = shape$rj)
-  
-  #we get the shortest distance from the center of the polygon to an edge
-  center_distance <- shortest_distance(r= c(center$x, center$y),
-                                       shape = shape)
-  #we get the shortest distance from our growth rates to an edge
-  growth_distance <- shortest_distance(r = r,
-                                       shape = shape)
-  
-  results <- data.frame("center_distance" =center_distance,
-                        "growth_distance"= growth_distance)
-  
-  return(results)
 }
 
 

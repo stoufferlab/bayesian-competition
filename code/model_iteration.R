@@ -44,7 +44,7 @@ model_grid_sunny<- combined_models(vero_models = vero_models,
                                    make_plot = FALSE)
 
 saveRDS(model_grid_sunny,
-        file = "results_sunny_feb21.RDS")
+        file = "results_sunny.RDS")
 
 
 # model_grid_woody<- combined_models(vero_models = vero_models,

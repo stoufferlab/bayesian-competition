@@ -5,9 +5,6 @@ source("code/gg_theme.R")
 mod<-  readRDS("~/bayesian-competition/results_sunny_22jan21.RDS")
 unbounded_mod <- readRDS("~/bayesian-competition/results_sunny_unbounded_22jan21.RDS")
 
-mod <- mod %>% mutate (distance_norm = (distance_center -distance_growth)) %>% 
-  mutate( distance_mean_norm = ( distance_mean_center - distance_mean_growth ))
-
 col1 <- rethinking::col.alpha("mediumseagreen", .3)
 col2 <- rethinking::col.alpha("grey50",.9)
 
@@ -23,7 +20,7 @@ integration <- ggplot(test_2) +
   ) +
   geom_point( mapping = aes(
     x = Omega_mean,
-    y = distance_mean_growth
+    y = distance_growth_mean
   ), col= "goldenrod3") +
   theme_alba +
   scale_color_manual(values = c(col2, col1)) +

@@ -1,9 +1,5 @@
 
 
-test_posterior <- test_2[order(decreasing = TRUE,test_2$distance_growth),]
-
-rare <- test_2[2,]
-
  vero_model <- vero_lv_multispecies_poisson.rds
  trcy_model <- trcy_bh_multispecies_poisson.rds
 
@@ -16,19 +12,14 @@ rare <- test_2[2,]
              j = 1e4)
  
  
-alpha <- matrix(c(0.003247007,0.02957824, 0.00287961,0.04696119 ), nrow = 2, ncol = 2)
-r <-c(0.6829131, 7.877205)
-R <- 767.8425
+alpha <- matrix(c(0.003404525 ,0.02933614  ,0.0050805000 ,0.04467113), nrow = 2, ncol = 2)
+r <-c(0.6746920 ,8.488632 )
+R <- 744
 
 
-r_feasible(alpha = alpha,
-           rconstraints = rconstraints,
-           Nupper = Nupper,
-           R_max = R,
-           make_plot = TRUE)
 
 
-shape <- feasibility_shape(alpha = alpha,
+shape <- determine_feasibility_shape(alpha = alpha,
                            R_max = R,
                            rconstraints = rconstraints, 
                            Nupper = Nupper)
@@ -50,6 +41,6 @@ abline(v=0,lty='dashed',lwd=1.5)
 
 
 lines(shape$ri, shape$rj)
-points(r[1], r[2], pch=20)
+points(r_mean[1], r_mean[2], pch=20)
 
 

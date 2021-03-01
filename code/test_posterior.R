@@ -17,10 +17,10 @@ ptm <- proc.time()
                               gi = gi,
                               sj = sj,
                               gj = gj,
-                              Ni = 1e4,
-                              Nj = 1e4,
-                              env = FALSE,
-                              make_plot = TRUE)
+                              Ni_max  = 1e4,
+                              Nj_max = 1e4,
+                              env = TRUE,
+                              bounded = FALSE)
 
 
 

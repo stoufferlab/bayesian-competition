@@ -169,7 +169,7 @@ shortest_distance<-function(r,
     # points that define the line
     p0 <- c(shape[i, ]$ri, shape[i, ]$rj)
     p1 <- c(shape[i + 1, ]$ri, shape[i + 1, ]$rj)
-    
+
     #we make everything a matrix
     line_matrix <- rbind(p0, p1) %>% as.matrix()
     r <- as.matrix(r) %>% t
@@ -219,17 +219,20 @@ shortest_distance<-function(r,
   
   #and we return which distance is the shortest
    minimum_distance <- data_dist[which(data_dist$distance_from_edge == min(data_dist$distance_from_edge)), ]
+   #but it has to be ONLY ONe
+   minimum_distance <- unique(minimum_distance$distance_from_edge)
+   
   # 
     # lines(x = c(minimum_distance[,"p1x"], minimum_distance[,"p2x"]),
     #       y=c(minimum_distance[,"p1y"], minimum_distance[,"p2y"]),
     #       lwd=3,
     #       col=2)
 
-  #But it matters if you are inside or outside the feasibility domain
+  #But it matters if you are inside or outside the feasibility domain, with a sign
    if (feasibility){
-     return(minimum_distance$distance_from_edge)
+     return(minimum_distance)
    }else{
-     return( - minimum_distance$distance_from_edge)
+     return( - minimum_distance)
    }
 }
 
@@ -252,18 +255,18 @@ distance_from_limit <- function(alpha,
   lines_in_shape <- unique(shape$theta) %>% length()
   #if there is no detectable shape
   if(nn==0 | lines_in_shape < 2){
-    
+    print(1)
     distance <- calculate_distance( p1 =  r,
                                     p2 = c(0,0))
     distance <- distance*feas
     results <- data.frame("center_distance" = distance,
                           "growth_distance"= 0)
     
-    return(results)
+    #return(results)
   }else{
     #if the feasibility domain is only a line, and not a volume, then we can not detect the minimum distance to a boundary
-   
-      
+      col1 <- rethinking::col.alpha("black", alpha = 0.3)
+      lines(shape$ri, shape$rj, col=col1)
       #the center of the polygon
       center <- poi(x = shape$ri,
                     y = shape$rj)
@@ -280,7 +283,7 @@ distance_from_limit <- function(alpha,
       results <- data.frame("center_distance" =center_distance,
                             "growth_distance"= growth_distance)
       
-      return(results)
+     # return(results)
       
     }
   

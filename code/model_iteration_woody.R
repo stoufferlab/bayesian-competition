@@ -1,4 +1,4 @@
-#iterating over models
+iterating over models
 
 library(brms)
 library(ggplot2)
@@ -40,7 +40,7 @@ trcy_models<- list(trcy_bh_multispecies_poisson.rds,
                    trcy_lv_multispecies_poisson.rds,
                    trcy_rc_multispecies_poisson.rds)
 
-model_grid <- combined_models(vero_models = vero_models,
+model_grid<- combined_models(vero_models = vero_models,
                                    trcy_models = trcy_models,
                                    si =si,
                                    gi =gi,
@@ -48,9 +48,9 @@ model_grid <- combined_models(vero_models = vero_models,
                                    sj=sj,
                                    Ni_max = 1e4,
                                    Nj_max =1e4,
-                                   env=FALSE,
+                                   env=TRUE,
                                    bounded = TRUE)
 
 saveRDS(model_grid,
-        file = "results_sunny_bounded.RDS")
+        file = "results_woody_bounded.RDS")
 

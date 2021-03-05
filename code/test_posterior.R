@@ -1,13 +1,21 @@
 source("code/read_models.R")
-source("code/integration_toolbox.R")
+source("code/feasibility_toolbox.R")
+source("code/saavedra_toolbox.R")
 source("code/model_toolbox.R")
 source("code/determine_radius.R")
-source("code/determine_boundary.R")
 
-gi<-.372
-si<-.556
-gj<-.258
-sj<-.033
+# 
+# gi<-.372
+# si<-.556
+# gj<-.258
+# sj<-.033
+
+
+#isaacs mean estimates
+gi<- 0.9641188
+si<- 0.9654804
+gj<- 0.4743974
+sj<- 0.9693324
 
 ptm <- proc.time()
 
@@ -17,10 +25,10 @@ ptm <- proc.time()
                               gi = gi,
                               sj = sj,
                               gj = gj,
-                              Ni_max  = 1e4,
-                              Nj_max = 1e4,
+                              Ni_max  = 1e3,
+                              Nj_max = 1e3,
                               env = TRUE,
-                              bounded = FALSE)
+                              bounded = TRUE)
 
 
 

@@ -8,12 +8,14 @@ col1 <- rethinking::col.alpha("mediumseagreen", .8)
 col2 <- rethinking::col.alpha("grey50",.8)
 
 
+mod <- results_sunny_bounded
+
 integration <- ggplot(mod) +
   geom_point(
     mapping = aes(
       x = Omega,
       y = distance_growth,
-      col = as.factor(feasibility)
+      col = as.factor(feasibility_saaveda)
     ),
     show.legend = FALSE
   ) +
@@ -25,13 +27,14 @@ integration <- ggplot(mod) +
   scale_color_manual(values = c(col2, col1)) +
   facet_grid(trcy_model~vero_model)  +
   geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50") +
-  xlim(0,0.1)
+  ylim(-30,30)
 
 fig1<- annotate_figure(integration,
                        
                        bottom = text_grob(expression(Omega),
                                           size = 12),
-                       left = text_grob("Distance (absolute)",  rot = 90, size = 12),
+                       left = text_grob(paste0("Distance from the boundary"," " ,expression(Theta)),
+                                               rot = 90, size = 12),
                        top = text_grob("Velleia rosea",
                                           size = 12,
                                       face = "italic" )
@@ -121,7 +124,7 @@ bars <- ggplot(proportions_coexistence)+
 
 fig2<- annotate_figure(bars,
                        
-                       bottom = text_grob("Models",
+                       bottom = text_grob("Model combination",
                                           size = 12),
                        left = text_grob("Proportion of coexistence",  rot = 90, size = 12),
                       

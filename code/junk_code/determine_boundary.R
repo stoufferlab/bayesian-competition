@@ -31,6 +31,12 @@ feasibility_boundary <- function(theta,
                                                        rconstraints = rconstraints,
                                                        Nupper = Nupper)
                          
+                         # if(feasible){
+                         #   points(ri,rj, pch= 20, col = rethinking::col.alpha( "dodgerblue",1 ))}
+                         # }else{
+                         #   points(ri,rj, pch= 20, col = rethinking::col.alpha( "firebrick", 0.1 ))
+                         # }
+                         
                          results <- data.frame( "theta" = theta, 
                                                 "R_bound"= R,
                                                 "ri"=ri,
@@ -99,7 +105,7 @@ determine_feasibility_shape <- function(alpha,
                              R_max = R_max,
                              rconstraints = rconstraints,
                              Nupper = Nupper,
-                             N = 100)
+                             N = 1000)
   
 
   nn <- nrow(shape)
@@ -111,7 +117,7 @@ determine_feasibility_shape <- function(alpha,
                                R_max = R_max,
                                rconstraints = rconstraints,
                                Nupper = Nupper,
-                               N = 500)
+                               N = 2000)
     nn_thin <- nrow(shape)
     
     if(nn_thin == 0){

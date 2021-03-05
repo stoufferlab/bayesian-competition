@@ -237,7 +237,6 @@ posterior_feasibility <- function(vero_model,
   #for an environmental condition either 0 (control) or 1 (woody)
   name <- paste0(vero_model$name, "&", trcy_model$name)
   print(name)
-  
   #we determine the alpha matrix for the mean parameter values
   alpha_mean <- get_fixed_alphas(
     vero_model = vero_model,
@@ -245,7 +244,6 @@ posterior_feasibility <- function(vero_model,
     gi = gi,
     gj = gj,
     env = env)
-  
   print(alpha_mean)
   #as well as r1 (vero's growth rate)
   vero_growth_mean <- get_fixed_growth(
@@ -253,7 +251,6 @@ posterior_feasibility <- function(vero_model,
     s = si,
     g = gi,
     env = env)
-  
   #and r2 (trcy's growth rate)
   trcy_growth_mean <- get_fixed_growth(
     model = trcy_model,
@@ -263,9 +260,7 @@ posterior_feasibility <- function(vero_model,
   #store them in a vector
   r_mean <- c(vero_growth_mean,
               trcy_growth_mean)
-  
-  
-  
+  #determine if there are boundaries on the growth rates
   if(!bounded) {
     # Each model has its own constraints
     rconstraints <- list(
@@ -280,52 +275,69 @@ posterior_feasibility <- function(vero_model,
       upper = c(vero_model$constraints[2], trcy_model$constraints[2])
     )  
   }
-  
-  print(rconstraints)
-  
+
   #And each species its maximum expected abundances
   Nupper <- c(i = Ni_max,
               j = Nj_max)
-  print(Nupper)
   #Which determine the Radius for each alpha matrix used
   R_mean <- determine_radius(alpha = alpha_mean,
                              Ni_max = Ni_max,
                              Nj_max = Nj_max)
-  
-  print(R_mean)
-  
-  # Knowing these we can calculate the feasibility domain and its center for mean parameter values
-  
-  omega_mean <- integrate_radii(
-    alpha = alpha_mean,
-    R = R_mean,
-    rconstraints = rconstraints,
-    Nupper = Nupper)
-  
-  
+
   #Saaveda et al. estimation, to compare
   omega_SA_mean <- Omega_SA(alpha = alpha_mean)
+  
   centroid_SA_mean <- r_centroid(alpha_mean)
+  
   theta_SA_mean <- theta(r_c = centroid_SA_mean,
                          r = r_mean)
+  
   feasibility_SA_mean <- test_feasibility_saavedra(alpha = alpha_mean,
                                                    r = r_mean)
-  #check if our growth rates are feasible
-  feasiblity_mean <- check_feasibility(
-    r = r_mean,
-    alpha = alpha_mean,
-    rconstraints = rconstraints,
-    Nupper = Nupper )
-  
-  
-  pdf(file= paste(name,"_",env,"_",bounded,".pdf"), width = 7, height = 7/1.6)
-  # R_vals <- seq(0, R_mean, length.out = 100)
-  # x_min <- ifelse(rconstraints$lower[1] == -Inf, -R_mean, rconstraints$lower[1])
-  # y_min <- ifelse(rconstraints$lower[2] == -Inf, -R_mean, rconstraints$lower[2])
-  # x_max <- ifelse(rconstraints$upper[1] == Inf, R_mean, rconstraints$upper[1])
-  # y_max <- ifelse(rconstraints$upper[2] == Inf, R_mean, rconstraints$upper[2])
-  
-  
+  #check if our growth rates are feasible, accordig to our constraints
+  feasiblity_mean <- check_point(r =r,
+                                 R_max = R_mean,
+                                 inv_alpha =  inverse_matrix(alpha_mean),
+                                 rconstraints = rconstraints,
+                                 Nupper = Nupper)
+  #Now we determine the feasibility shape with our Monte Carlo Integration
+ integration_mean<- integrate_area(R_max = R_mean,
+                 alpha = alpha_mean,
+                 rconstraints = rconstraints,
+                 Nupper = Nupper,
+                 n_samples = 1e5
+  )
+ #which spits out the propotion of the area that is feasible, or the feasibility domain
+ Omega_mean <- integration_mean$proportion
+ #And also the coordinates of all the points that are feasible
+ shape_mean <- integration_mean$coords
+ # which tell us the bounds of the feasibility domain
+ shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
+ bounds_mean <- shape_bounds_mean$bounds
+ # and also the area the area of the feasibility domain
+ area_mean <- shape_bounds_mean$area
+ #with the bounds we can then get the distance from the limit of our growth rates
+ distances_mean <- distance_from_limit(r=r_mean,
+                                       shape = bounds_mean,
+                                       feasibility = feasiblity_mean)
+ distance_growth_mean <- distances_mean$growth_distance
+ distance_center_mean <- distances_mean$center_distance
+ # And we keep track of everything
+ #we store the values of coexistence using the point estimates
+ mean_parameters_results <- data.frame(
+   "Omega_saavedraa_mean"= omega_SA_mean,
+   "theta_saavedra_mean" = theta_SA_mean,
+   "feasibility_saavedra_mean" = feasibility_SA_mean,
+   "Omega_mean"= Omega_mean,
+   "area_mean"= area_mean,
+   "distance_center_mean"=  distance_center_mean,
+   "distance_growth_mean"=  distance_growth_mean,
+   "feasibility_mean"= feasiblity_mean,
+   "R_mean"=R_mean)
+ print(mean_parameters_results)
+
+ ##we plot how it looks just for kicks
+  png(file= paste(name,"_",env,"_",bounded,"_","mean", ".png"), width = 7, height = 7/1.6)
   plot(0,0,
        xlim=c(-R_mean,R_mean),
        ylim=c(-R_mean, R_mean),
@@ -337,36 +349,15 @@ posterior_feasibility <- function(vero_model,
   abline(v=0,lty='dashed',lwd=1.5)
   
   
-  # estimation of the distance from the center of the polygon to the nearest boundary,
-  # and from the growth rates to the nearest boundary
-  distance_mean <- distance_from_limit(alpha = alpha_mean,
-                                       R_max = R_mean,
-                                       rconstraints = rconstraints, 
-                                       Nupper = Nupper,
-                                       r = r_mean,
-                                       feasibility = feasiblity_mean)
+  col1 <- rethinking::col.alpha("grey50", alpha=0.5)
+  points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
+  lines(bounds_mean$ri, bounds_mean$rj, col= "mediumseagreen", lwd=2)
   
-  #we store the values of coexistence using the point estimates
-  mean_parameters_results <- data.frame(
-    "Omega_saavedraa_mean"= omega_SA_mean,
-    "theta_saavedra_mean" = theta_SA_mean,
-    "feasibility_saavedra_mean" = feasibility_SA_mean,
-    "Omega_mean"= omega_mean,
-    "distance_center_mean"=  distance_mean$center_distance,
-    "distance_growth_mean"=  distance_mean$growth_distance,
-    "feasibility_mean"= feasiblity_mean,
-    "R_mean"=R_mean)
-  print(mean_parameters_results)
-  
-  
-  
+ dev.off()
   
 
-  
-  
-  
+
   #######NOW for the posterior parameters#################################
-  
   
   # we extract the posterior parameter values and growwth rates
   vero_post <- posterior_parameters(model = vero_model,
@@ -386,14 +377,12 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post_sample<-vero_post[1:500, ]
-    trcy_post_sample<-trcy_post[1:500, ]
-    
+    vero_post_sample<-vero_post[1:10, ]
+    trcy_post_sample<-trcy_post[1:10, ]
     
     #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post_sample),1) %>% as.list()
-    
-    
+
     posterior_parameters_results<-lapply(x,function(rows,
                                                     vero_post_sample,
                                                     trcy_post_sample,
@@ -401,8 +390,8 @@ posterior_feasibility <- function(vero_model,
                                                     gj,
                                                     rconstraints,
                                                     Nupper){
-      print("posterior distribution no.")
-      
+   print(rows)
+      #we get the alpha matrix for a point in the posteior and the growth rates
       alpha  <- alpha_matrix(
         vero_row = vero_post_sample[rows, ],
         trcy_row = trcy_post_sample[rows, ],
@@ -421,50 +410,60 @@ posterior_feasibility <- function(vero_model,
       
       r_post <- c(r1,r2)
       
-      
       #we determine R for every alpha matrix
       R_post <- determine_radius(alpha = alpha, 
                                  Ni_max = Ni_max,
                                  Nj_max = Nj_max)
       
-      
-      #and the size of the feasibility domain
-      omega_post <- integrate_radii(alpha = alpha,
-                                    R = R_post,
-                                    rconstraints = rconstraints,
-                                    Nupper = Nupper )
-      
-      
-      #are our growth rates feasible?
-      feasibility_post <- check_feasibility(r= r_post,
-                                            alpha = alpha,
-                                            rconstraints = rconstraints,
-                                            Nupper = Nupper )
-      
-      
-      distance_post <-  distance_from_limit(alpha = alpha,
-                                            R_max = R_post,
-                                            rconstraints = rconstraints, 
-                                            Nupper = Nupper,
-                                            r = r_post,
-                                            feasibility = feasibility_post)
-      
       #Saavedras aproximation
       omega_post_SA <- Omega_SA(alpha = alpha)
+      
       centroid_post_SA <- r_centroid(alpha = alpha)
+      
       theta_post_SA <- theta(r_c = centroid_post_SA,
                              r = r_post)
+      
       feasibility_post_SA <- test_feasibility_saavedra(alpha = alpha, 
                                                        r = r_post)
       
-      #all togethe
+      #our approximation ############################################
+      feasiblity_post <- check_point(r =r_post,
+                                     R_max = R_post,
+                                     inv_alpha =  inverse_matrix(alpha),
+                                     rconstraints = rconstraints,
+                                     Nupper = Nupper)
+      #Now we determine the feasibility shape with our Monte Carlo Integration
+      integration_post <- integrate_area(R_max = R_post,
+                                        alpha = alpha,
+                                        rconstraints = rconstraints,
+                                        Nupper = Nupper,
+                                        n_samples = 1e5
+      )
+      #which spits out the propotion of the area that is feasible, or the feasibility domain
+      Omega_post <- integration_post$proportion
+      #And also the coordinates of all the points that are feasible
+      shape_post <- integration_post$coords
+      # which tell us the bounds of the feasibility domain
+      shape_bounds_post <- determine_boundary_shape(shape = shape_post)
+      bounds_post <- shape_bounds_post$bounds
+      # and also the area the area of the feasibility domain
+      area_post <- shape_bounds_post$area
+      #with the bounds we can then get the distance from the limit of our growth rates
+      distances_post <- distance_from_limit(r=r_post,
+                                            shape = bounds_post,
+                                            feasibility = feasiblity_post)
+      distance_growth_post <- distances_post$growth_distance
+      distance_center_post <- distances_post$center_distance
+      
+      #all together, they make a row of results
       post_results <- data.frame(
         "Omega_saaveda"= omega_post_SA,
         "theta_saavedra"= theta_post_SA,
         "feasibility_saaveda"= feasibility_post_SA,
-        "Omega"= omega_post, 
-        "distance_center"=  distance_post$center_distance,
-        "distance_growth"= distance_post$growth_distance,
+        "Omega"= Omega_post, 
+        "area" = area_post,
+        "distance_center"= distance_center_post,
+        "distance_growth"= distance_growth_post,
         "feasibility" = feasibility_post,
         "Radius" = R_post,
         "r1" = r1,
@@ -473,6 +472,26 @@ posterior_feasibility <- function(vero_model,
         "alpha21"= alpha[2,1],
         "alpha12"= alpha[1,2],
         "alpha22"= alpha[2,2])
+      
+      
+      png(file= paste(name,"_",env,"_",bounded,"_",rows, ".png"), width = 7, height = 7/1.6)
+      plot(0,0,
+           xlim=c(-R_post,R_post),
+           ylim=c(-R_post, R_post),
+           type='n',
+           xlab=expression(italic(r[i])),
+           ylab=expression(italic(r[j]))
+      )
+      abline(h=0,lty='dashed',lwd=1.5)
+      abline(v=0,lty='dashed',lwd=1.5)
+      
+      
+      col1 <- rethinking::col.alpha("grey50", alpha=0.5)
+      points(shape_post$ri, shape_post$rj, pch=20, col=col1)
+      lines(bounds_post$ri, bounds_post$rj, col= "mediumseagreen", lwd=2)
+      
+      dev.off()
+      
       
       return(post_results)
       
@@ -491,8 +510,7 @@ posterior_feasibility <- function(vero_model,
     # print(all_results)
     file <- paste0(name,".RDS")
     # print(file)
-   # saveRDS(object = all_results,file = paste0(name,".RDS"))
-    dev.off()
+   # saveRDS(object = all_results,file = paste0(name,".RDS")
     return(all_results) 
   }
 }

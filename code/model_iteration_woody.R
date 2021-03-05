@@ -1,4 +1,4 @@
-iterating over models
+
 
 library(brms)
 library(ggplot2)

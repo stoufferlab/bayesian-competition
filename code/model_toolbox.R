@@ -305,17 +305,19 @@ posterior_feasibility <- function(vero_model,
   #in this case if it is NA it means it is unfeasible
   feasiblity_mean <-  ifelse(feas_na,0, feasiblity_mean)
   
-  #Now we determine the feasibility shape with our Monte Carlo Integration
+  #Now we determine the feasibility shape with our Monte Carlo Sampling
  integration_mean<- integrate_area(R_max = R_mean,
                  alpha = alpha_mean,
                  rconstraints = rconstraints,
                  Nupper = Nupper,
-                 n_samples = 1e5
+                 n_samples = 5e5
   )
  #which spits out the propotion of the area that is feasible, or the feasibility domain
  Omega_mean <- integration_mean$proportion
  #And also the coordinates of all the points that are feasible
  shape_mean <- integration_mean$coords
+ #and the points that are unfeasible
+ unfeasible_mean <- integration_mean$unfeasible
  # which tell us the bounds of the feasibility domain
  shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
  bounds_mean <- shape_bounds_mean$bounds
@@ -327,6 +329,10 @@ posterior_feasibility <- function(vero_model,
                                        feasibility = feasiblity_mean)
  distance_growth_mean <- distances_mean$growth_distance
  distance_center_mean <- distances_mean$center_distance
+ #but also we get the proportion of things inside the convex hull
+ convex_mean <- calculate_convex(shape = bounds_mean,
+                                 unfeasible = unfeasible_mean)
+ 
  # And we keep track of everything
  #we store the values of coexistence using the point estimates
  mean_parameters_results <- data.frame(
@@ -338,14 +344,15 @@ posterior_feasibility <- function(vero_model,
    "distance_center_mean"=  distance_center_mean,
    "distance_growth_mean"=  distance_growth_mean,
    "feasibility_mean"= feasiblity_mean,
-   "R_mean"=R_mean)
+   "R_mean"=R_mean,
+   "convex_mean"= convex_mean)
  print(mean_parameters_results)
  
  #we plot how it looks just for kicks
  pdf(file= paste(name,"_",env,"_",bounded,"_","mean", ".pdf"), width = 7, height = 7/1.6)
  plot(0,0,
-      xlim=c(-R_mean,R_mean),
-      ylim=c(-R_mean, R_mean),
+      xlim=c(min(bounds_mean$ri), max(bounds_mean$ri)),
+      ylim=c(min(bounds_mean$rj), max(bounds_mean$rj)),
       type='n',
       xlab=expression(italic(r[i])),
       ylab=expression(italic(r[j]))
@@ -380,8 +387,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post_sample<-vero_post[1:10, ]
-    trcy_post_sample<-trcy_post[1:10, ]
+    vero_post_sample<-vero_post[1:100, ]
+    trcy_post_sample<-trcy_post[1:100, ]
     
     #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post_sample),1) %>% as.list()
@@ -449,7 +456,7 @@ posterior_feasibility <- function(vero_model,
                                         alpha = alpha,
                                         rconstraints = rconstraints,
                                         Nupper = Nupper,
-                                        n_samples = 1e5
+                                        n_samples = 5e5
       )
       
       #which spits out the propotion of the area that is feasible, or the feasibility domain
@@ -461,11 +468,17 @@ posterior_feasibility <- function(vero_model,
       bounds_post <- shape_bounds_post$bounds
       # and also the area the area of the feasibility domain
       area_post <- shape_bounds_post$area
+      
+      unfeasible_post <- integration_post$unfeasible
       #with the bounds we can then get the distance from the limit of our growth rates
       distances_post <- distance_from_limit(r=r_post,
                                             shape = bounds_post,
                                             feasibility = f_post)
       print("distances")
+      
+      convex_post <- calculate_convex(shape = bounds_post,
+                                      unfeasible = unfeasible_post)
+      
       print(distances_post)
       distance_growth_post <- distances_post$growth_distance
       distance_center_post <- distances_post$center_distance
@@ -481,6 +494,7 @@ posterior_feasibility <- function(vero_model,
         "distance_growth"= distance_growth_post,
         "feasibility" = f_post,
         "Radius" = R_post,
+        "convex"= convex_post,
         "r1" = r1,
         "r2"= r2,
         "alpha11"= alpha[1,1],
@@ -488,23 +502,23 @@ posterior_feasibility <- function(vero_model,
         "alpha12"= alpha[1,2],
         "alpha22"= alpha[2,2])
       
-      pdf(file= paste(name,"_",env,"_",bounded,"_",rows, ".pdf"), width = 7, height = 7/1.6)
-      plot(0,0,
-           xlim=c(-R_post,R_post),
-           ylim=c(-R_post, R_post),
-           type='n',
-           xlab=expression(italic(r[i])),
-           ylab=expression(italic(r[j]))
-      )
-      abline(h=0,lty='dashed',lwd=1.5)
-      abline(v=0,lty='dashed',lwd=1.5)
-      
-      
-      col1 <- rethinking::col.alpha("grey50", alpha=0.5)
-      points(shape_post$ri, shape_post$rj, pch=20, col=col1)
-      lines(bounds_post$ri, bounds_post$rj, col= "mediumseagreen", lwd=2)
-      
-      dev.off()
+      # pdf(file= paste(name,"_",env,"_",bounded,"_",rows, ".pdf"), width = 7, height = 7/1.6)
+      # plot(0,0,
+      #      xlim=c(-R_post,R_post),
+      #      ylim=c(-R_post, R_post),
+      #      type='n',
+      #      xlab=expression(italic(r[i])),
+      #      ylab=expression(italic(r[j]))
+      # )
+      # abline(h=0,lty='dashed',lwd=1.5)
+      # abline(v=0,lty='dashed',lwd=1.5)
+      # 
+      # 
+      # col1 <- rethinking::col.alpha("grey50", alpha=0.5)
+      # points(shape_post$ri, shape_post$rj, pch=20, col=col1)
+      # lines(bounds_post$ri, bounds_post$rj, col= "mediumseagreen", lwd=2)
+      # 
+      # dev.off()
       
       return(post_results)
       

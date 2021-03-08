@@ -123,6 +123,8 @@ integrate_area <- function(R_max,
   total <- 0
   coordinates_ri <- c()
   coordinates_rj <- c()
+  coordinates_unfeasible_ri <- c()
+  coordinates_unfeasible_rj <- c()
   while(samples < n_samples){
     #generate a random point inside a Radius defined by R_max
     point <- generate_point(R_max= R_max)
@@ -141,6 +143,9 @@ integrate_area <- function(R_max,
      if(result){
        coordinates_ri <-c(coordinates_ri, point[1])
        coordinates_rj <-c(coordinates_rj, point[2])
+     }else{
+       coordinates_unfeasible_ri <- c(coordinates_unfeasible_ri, point[1])
+       coordinates_unfeasible_rj <- c(coordinates_unfeasible_rj, point[2])
      }
     
    # points(point[1], point[2],col=col1, pch=20)
@@ -150,27 +155,53 @@ integrate_area <- function(R_max,
   }
   
    ri_rj <- data.frame("ri"= coordinates_ri, "rj"= coordinates_rj)
+   unfeasible <- data.frame("ri"= coordinates_unfeasible_ri, "rj"= coordinates_unfeasible_rj)
    proportion <- total/n_samples
    
-  return(list("proportion"= proportion, "coords"= ri_rj))
+  return(list("proportion"= proportion,
+              "coords"= ri_rj,
+              "unfeasible"= unfeasible))
   
 }
 
 
 #function to get the shape of the feasibility domain takes in a data frame of coordinates
 determine_boundary_shape <- function(shape){
- #returns the coordinates of the limits
-# the area of the feasibility domain
-      #we determine the boundary of the points, assuming it is a convex hull
-      coord_points <- grDevices::chull(x = shape[,"ri"], y=shape[,"rj"]) 
-      #we add the first point to complete the polygon
-      coord_points<- c(coord_points, coord_points[1])
-      shape_bounds <- shape[coord_points,]
+  nn <- nrow(shape)
+  if(nn <= 1){
+    shape_bounds <- data.frame("ri"=0, "rj"=0)
+    return(list("bounds"=shape_bounds,
+                "area"= 0))
+      
+  }else{
   
-      area_polygon <- sp::Polygon(coords = shape_bounds,
-                                  hole = FALSE)
-      return(list("bounds"=shape_bounds,
-                  "area"= area_polygon@area))
+    #returns the coordinates of the limits
+    # the area of the feasibility domain
+    #we determine the boundary of the points, assuming it is a convex hull
+    coord_points <- grDevices::chull(x = shape[,"ri"], y=shape[,"rj"]) 
+    #we add the first point to complete the polygon
+    coord_points<- c(coord_points, coord_points[1])
+    shape_bounds <- shape[coord_points,]
+    
+    area_polygon <- sp::Polygon(coords = shape_bounds,
+                                hole = FALSE)
+    return(list("bounds"=shape_bounds,
+                "area"= area_polygon@area))
+  }
+  
+
+}
+
+
+
+calculate_convex <-function(shape,
+                            unfeasible){
+  prop <- sp::point.in.polygon(point.x = unfeasible$ri,
+                               point.y = unfeasible$rj,
+                               pol.x = shape$ri,
+                               pol.y = shape$rj)
+return(  mean(prop))
+  
 }
 
 #function to get the euclidean distance between to points
@@ -263,7 +294,7 @@ distance_from_limit <- function(r,
                                 feasibility){
   nn <- nrow(shape)
   #if there is no detectable shape
-  if(nn <= 1){
+  if(nn <= 4){
     print("no feasibility domain detected")
     #and we detect the distance from our growth rates to the point 0,0
     distance <- calculate_distance( p1 =  r,

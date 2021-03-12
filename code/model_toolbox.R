@@ -310,7 +310,7 @@ posterior_feasibility <- function(vero_model,
                  alpha = alpha_mean,
                  rconstraints = rconstraints,
                  Nupper = Nupper,
-                 n_samples = 5e5
+                 n_samples = 1e4
   )
  #which spits out the propotion of the area that is feasible, or the feasibility domain
  Omega_mean <- integration_mean$proportion
@@ -456,7 +456,7 @@ posterior_feasibility <- function(vero_model,
                                         alpha = alpha,
                                         rconstraints = rconstraints,
                                         Nupper = Nupper,
-                                        n_samples = 5e5
+                                        n_samples = 1e4
       )
       
       #which spits out the propotion of the area that is feasible, or the feasibility domain

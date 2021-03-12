@@ -118,6 +118,7 @@ integrate_area <- function(R_max,
   #returns the proportion of the area that is feasible, inside the boundaries and
   # the coordinates of the points that are feasible
   inv_alpha <- inverse_matrix(alpha)
+
   
   samples<- 0
   total <- 0
@@ -299,7 +300,7 @@ distance_from_limit <- function(r,
     #and we detect the distance from our growth rates to the point 0,0
     distance <- calculate_distance( p1 =  r,
                                     p2 = c(0,0))
-    distance <- distance*feas
+    distance <- -distance 
     results <- data.frame("center_distance" = distance,
                           "growth_distance"= 0)
 

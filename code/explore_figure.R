@@ -8,14 +8,14 @@ col1 <- rethinking::col.alpha("mediumseagreen", .8)
 col2 <- rethinking::col.alpha("grey50",.8)
 
 
-mod <- results_sunny_bounded
+mod <- results_woody_bounded
 
 integration <- ggplot(mod) +
   geom_point(
     mapping = aes(
       x = Omega,
       y = distance_growth,
-      col = as.factor(feasibility_saaveda)
+      col = as.factor(feasibility)
     ),
     show.legend = FALSE
   ) +
@@ -26,8 +26,10 @@ integration <- ggplot(mod) +
   theme_alba +
   scale_color_manual(values = c(col2, col1)) +
   facet_grid(trcy_model~vero_model)  +
-  geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50") +
-  ylim(-30,30)
+  geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")
+#+
+ # ylim(-1,1)+
+  #xlim(0,0.05)
 
 fig1<- annotate_figure(integration,
                        
@@ -113,13 +115,7 @@ bars <- ggplot(proportions_coexistence)+
         legend.key = element_rect(fill = "white",
                                   colour = NA),
         strip.text.x = element_text(size = 12, colour = "black"),
-        strip.text.y = element_text(size = 12, colour = "black")) +
-  geom_abline(intercept = max(proportions_coexistence$propotion_coexistence),
-              slope = 0,
-              col="grey50",
-              size =1,
-              linetype = "dashed")
-
+        strip.text.y = element_text(size = 12, colour = "black")) 
 
 
 fig2<- annotate_figure(bars,

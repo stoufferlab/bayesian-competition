@@ -244,7 +244,6 @@ posterior_feasibility <- function(vero_model,
     gi = gi,
     gj = gj,
     env = env)
-  print(alpha_mean)
   #as well as r1 (vero's growth rate)
   vero_growth_mean <- get_fixed_growth(
     model = vero_model,
@@ -310,7 +309,8 @@ posterior_feasibility <- function(vero_model,
                  alpha = alpha_mean,
                  rconstraints = rconstraints,
                  Nupper = Nupper,
-                 n_samples = 1e4
+                 desired_feasible = 1000,
+                 max_samples = 1e6
   )
  #which spits out the propotion of the area that is feasible, or the feasibility domain
  Omega_mean <- integration_mean$proportion
@@ -456,7 +456,8 @@ posterior_feasibility <- function(vero_model,
                                         alpha = alpha,
                                         rconstraints = rconstraints,
                                         Nupper = Nupper,
-                                        n_samples = 1e4
+                                        desired_feasible = 1000,
+                                        max_samples = 1e6
       )
       
       #which spits out the propotion of the area that is feasible, or the feasibility domain
@@ -502,24 +503,7 @@ posterior_feasibility <- function(vero_model,
         "alpha12"= alpha[1,2],
         "alpha22"= alpha[2,2])
       
-      # pdf(file= paste(name,"_",env,"_",bounded,"_",rows, ".pdf"), width = 7, height = 7/1.6)
-      # plot(0,0,
-      #      xlim=c(-R_post,R_post),
-      #      ylim=c(-R_post, R_post),
-      #      type='n',
-      #      xlab=expression(italic(r[i])),
-      #      ylab=expression(italic(r[j]))
-      # )
-      # abline(h=0,lty='dashed',lwd=1.5)
-      # abline(v=0,lty='dashed',lwd=1.5)
-      # 
-      # 
-      # col1 <- rethinking::col.alpha("grey50", alpha=0.5)
-      # points(shape_post$ri, shape_post$rj, pch=20, col=col1)
-      # lines(bounds_post$ri, bounds_post$rj, col= "mediumseagreen", lwd=2)
-      # 
-      # dev.off()
-      
+
       return(post_results)
       
     }, vero_post_sample = vero_post_sample ,

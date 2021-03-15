@@ -79,6 +79,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   if(!check_radius_boundaries(r = r,
                          R_max = R_max)){
+    #print("out of r boundaries")
     return(NA)
   }
   
@@ -86,6 +87,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   if(!check_r_boundaries(r = r,
                          rconstraints = rconstraints)){
+  #  print("out of growth boundaries")
     return(NA)
   }
   
@@ -95,6 +97,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   if(!check_N_boundaries(N = N,
                          Nupper = Nupper)){
+  # print("out of abundance boundaries")
     return(NA)
   }
   
@@ -109,16 +112,19 @@ generate_point<- function(R_max){
   return(runif(2, -R_max, R_max))
 }
 
-#Function that generates many random points and checks our constraints and feasibility, by monte carlo sampling. 
+#Function that generates many random points and checks our constraints and feasibility, by monte carlo sampling
+# desired feasible is the number of points we want in the feasiblity region
+#max_samples is the max. number of samples before it gives up
 integrate_area <- function(R_max,
-                           alpha,
-                           rconstraints=NULL,
-                           Nupper=NULL,
-                           n_samples){
+                                    alpha,
+                                    rconstraints=NULL,
+                                    Nupper=NULL,
+                                    desired_feasible=1000,
+                                    max_samples = 1e6){
   #returns the proportion of the area that is feasible, inside the boundaries and
   # the coordinates of the points that are feasible
   inv_alpha <- inverse_matrix(alpha)
-
+  
   
   samples<- 0
   total <- 0
@@ -126,7 +132,10 @@ integrate_area <- function(R_max,
   coordinates_rj <- c()
   coordinates_unfeasible_ri <- c()
   coordinates_unfeasible_rj <- c()
-  while(samples < n_samples){
+  
+  
+  
+  while(total < desired_feasible & samples < max_samples){
     #generate a random point inside a Radius defined by R_max
     point <- generate_point(R_max= R_max)
     #we check if it is within the boundaries, and if it is feasible
@@ -139,26 +148,26 @@ integrate_area <- function(R_max,
       next
     }
     
-  #  col1<-ifelse(result,"blue","red")
-  #  if the point is inside the boundary and feasible, we save its coordenates
-     if(result){
-       coordinates_ri <-c(coordinates_ri, point[1])
-       coordinates_rj <-c(coordinates_rj, point[2])
-     }else{
-       coordinates_unfeasible_ri <- c(coordinates_unfeasible_ri, point[1])
-       coordinates_unfeasible_rj <- c(coordinates_unfeasible_rj, point[2])
-     }
+    #  col1<-ifelse(result,"blue","red")
+    #  if the point is inside the boundary and feasible, we save its coordenates
+    if(result){
+      coordinates_ri <-c(coordinates_ri, point[1])
+      coordinates_rj <-c(coordinates_rj, point[2])
+    }else{
+      coordinates_unfeasible_ri <- c(coordinates_unfeasible_ri, point[1])
+      coordinates_unfeasible_rj <- c(coordinates_unfeasible_rj, point[2])
+    }
     
-   # points(point[1], point[2],col=col1, pch=20)
+    # points(point[1], point[2],col=col1, pch=20)
     
     samples <- samples + 1
     total <- total + result
   }
   
-   ri_rj <- data.frame("ri"= coordinates_ri, "rj"= coordinates_rj)
-   unfeasible <- data.frame("ri"= coordinates_unfeasible_ri, "rj"= coordinates_unfeasible_rj)
-   proportion <- total/n_samples
-   
+  ri_rj <- data.frame("ri"= coordinates_ri, "rj"= coordinates_rj)
+  unfeasible <- data.frame("ri"= coordinates_unfeasible_ri, "rj"= coordinates_unfeasible_rj)
+  proportion <- total/samples
+  
   return(list("proportion"= proportion,
               "coords"= ri_rj,
               "unfeasible"= unfeasible))
@@ -169,7 +178,7 @@ integrate_area <- function(R_max,
 #function to get the shape of the feasibility domain takes in a data frame of coordinates
 determine_boundary_shape <- function(shape){
   nn <- nrow(shape)
-  if(nn <= 1){
+  if(nn <= 4){
     shape_bounds <- data.frame("ri"=0, "rj"=0)
     return(list("bounds"=shape_bounds,
                 "area"= 0))
@@ -194,7 +203,7 @@ determine_boundary_shape <- function(shape){
 }
 
 
-
+#determine if any of the samples of the unfeasible points are inside the feasiblity domain, to see if we indeed, are calculating a convex hull
 calculate_convex <-function(shape,
                             unfeasible){
   prop <- sp::point.in.polygon(point.x = unfeasible$ri,
@@ -306,8 +315,6 @@ distance_from_limit <- function(r,
 
   }else{
 
-  
-    
     #the center of the polygon
     center <- poi(x = shape$ri,
                   y = shape$rj)
@@ -328,9 +335,4 @@ distance_from_limit <- function(r,
   return(results)
   
 }
-
-
-
-
-
 

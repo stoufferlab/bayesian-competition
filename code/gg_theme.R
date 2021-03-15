@@ -18,6 +18,7 @@ theme_alba<- theme(#legend.title = element_text(size = 12),
   legend.key = element_rect(fill = "white",
                             colour = NA),
   strip.text.x = element_text(size = 12, colour = "black"),
-  strip.text.y = element_text(size = 12, colour = "black"))
+  strip.text.y = element_text(size = 12, colour = "black"),
+  axis.text=element_text(size=10, color = "black"))
 
 palette_alba<-ggpubr::get_palette(palette = "YlGn",k=16)[c(7,10,13,16)]

@@ -80,6 +80,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_radius_boundaries(r = r,
                          R_max = R_max)){
     #print("out of r boundaries")
+  
     return(NA)
   }
   
@@ -88,6 +89,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_r_boundaries(r = r,
                          rconstraints = rconstraints)){
   #  print("out of growth boundaries")
+  #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
     return(NA)
   }
   
@@ -98,6 +100,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_N_boundaries(N = N,
                          Nupper = Nupper)){
   # print("out of abundance boundaries")
+    #points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=0.1))
     return(NA)
   }
   

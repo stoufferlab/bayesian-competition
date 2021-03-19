@@ -28,6 +28,8 @@ extract_proportion_samples <- function(mod,
  },n_samples=n_samples) 
  
   all_models <- do.call(rbind, proportions)
+  
+  all_models  <- all_models %>% separate(model, into=c("vero_model", "trcy_model"),sep = "_")
   return(all_models)
 }
 

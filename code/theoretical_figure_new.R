@@ -7,7 +7,7 @@ rconstraints <- list(
   upper = c(1, Inf))
 
 alpha<- diag(2)
-alpha[2,1]<- 0.3
+alpha[2,1]<- -0.3
 alpha[1,2]<- 0.3
 
 Ni_max <- 1e3

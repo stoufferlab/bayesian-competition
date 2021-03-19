@@ -4,6 +4,7 @@ source("code/gg_theme.R")
 source("code/boxplot_proportions.R")
 
 
+
 make_figure<-function(mod,
                       n_samples,
                       name){
@@ -28,63 +29,67 @@ make_figure<-function(mod,
     theme_alba +
     scale_color_manual(values = c(col2, col1)) +
     facet_grid(trcy_model~vero_model)  +
-    geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")
-  #+
-  # ylim(-1,1)+
-  #xlim(0,0.05)
+    geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50") 
+  
+  
   
   fig1<- annotate_figure(integration,
                          
                          bottom = text_grob( expression('Feasibility domain,'~Omega),
                                              size = 12),
                          left = text_grob(expression('Distance from the boundary,'~theta),
-                                          rot = 90, size = 12),
-                         top = text_grob("Velleia rosea",
-                                         size = 12,
-                                         face = "italic" )
-                         ,
-                         right = text_grob("Trachymene cyanopetala",
-                                           size = 12,
-                                           face = "italic",
-                                           rot = 270),
-                         
-  )
+                                          rot = 90, size = 12))
   
   
   mod_proportions <- extract_proportion_samples(mod = mod,
                                                 n_samples = n_samples)
-  
+  mod_proportions <- mod_proportions %>% mutate(value =1)
   
   
   plot_proportions <-ggplot(mod_proportions) +
-    geom_boxplot(mapping = aes(x=model,
+    geom_boxplot(mapping = aes(x=value,
                                y=proportions),
                  fill="mediumseagreen") +
     theme_alba +
-    scale_x_discrete(labels=c("BH-BH","BH-LV","BH-RC","LV-BH","LV-LV","LV-RC","RC-BH","RC-LV","RC-RC")) 
+    facet_grid(trcy_model~vero_model)+
+    scale_y_continuous(breaks = c(0,0.5,1))+
+    scale_x_continuous(breaks = NULL, labels = NULL)+
+    labs(x="")
+  
+    
+  #  scale_x_discrete(labels=c("BH-BH","BH-LV","BH-RC","LV-BH","LV-LV","LV-RC","RC-BH","RC-LV","RC-RC")) 
   
   
   
   fig2 <- annotate_figure(plot_proportions,
-                          bottom = text_grob("Model combination",
-                                             size = 12),
                           left = text_grob("Proportion of coexistence",
                                            rot = 90, size =12))
-  
   
   
   
   #pdf("test2", width = 7, height = 9)
   p<-ggarrange(fig1, fig2,
                ncol = 1,
-               nrow = 2, heights = c(1,0.5))
-  p
+               nrow = 2, heights = c(1,0.8))
+  p <- annotate_figure(   p,top = text_grob("Velleia rosea",
+                                          size = 12,
+                                          face = "italic" )
+                          ,
+                          right = text_grob("Trachymene cyanopetala",
+                                            size = 12,
+                                            face = "italic",
+                                            rot = 270))
   
-  ggsave(filename = name,plot = p,width = 7,height = 9)
+  ggsave(filename = name,plot = p,width = 7,height = 10)
   #dev.off()
   
   
 }
 
 
-make_figure(mod = example,n_samples = 100,name = "test.pdf")
+make_figure(mod = results_sunny_bounded,n_samples = 1000,name = "sunny_100.pdf")
+make_figure(mod = results_woody_bounded,n_samples = 1000,name = "woody_100.pdf")
+
+
+
+

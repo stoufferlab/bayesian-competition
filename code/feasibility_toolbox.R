@@ -100,7 +100,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_N_boundaries(N = N,
                          Nupper = Nupper)){
   # print("out of abundance boundaries")
-    #points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=0.1))
+  #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=0.1))
     return(NA)
   }
   

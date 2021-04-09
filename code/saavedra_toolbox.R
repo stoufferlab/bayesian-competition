@@ -48,7 +48,7 @@ calculate_area<-function(R=1, alpha){
   angle_degrees <- (angle *180) / pi
   
   
-  #DrawArc(x=0,y=0, rx=R, theta.1 = theta1, theta.2=theta2)
+  #DrawArc(x=0,y=0, rx=R, theta.1 = theta1, theta.2=ctheta2)
   
   #The area of the full circle 
   area_circle<- pi * (R^2)
@@ -86,3 +86,5 @@ test_feasibility_saavedra <- function(alpha,r){
   out <- prod(solve(alpha,r)>0)
   return(out)
 }
+
+

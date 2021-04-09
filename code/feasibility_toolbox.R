@@ -171,9 +171,7 @@ integrate_area <- function(R_max,
   unfeasible <- data.frame("ri"= coordinates_unfeasible_ri, "rj"= coordinates_unfeasible_rj)
   proportion <- total/samples
   
-  return(list("proportion"= proportion,
-              "coords"= ri_rj,
-              "unfeasible"= unfeasible))
+  return(list("coords"= ri_rj, "unfeasible"=unfeasible))
   
 }
 
@@ -338,4 +336,113 @@ distance_from_limit <- function(r,
   return(results)
   
 }
+
+# functions to get the area of species without competition
+get_boundary_r <-function(intraspecific_competition,
+                          N_max,
+                          lower,
+                          upper){
+  max_growth_rate <- intraspecific_competition * N_max
+  
+  if( intraspecific_competition > 0){
+    
+    bounds <- min(max_growth_rate, upper)
+    return(bounds)
+    
+  }else{
+    bounds <- max(max_growth_rate, lower)
+    return(bounds)
+  }
+  
+  return(bounds)
+  
+}
+
+
+area_species_alone <- function(alpha,
+                               Nupper,
+                               rconstraints){
+  
+
+  ri_bound <- get_boundary_r(intraspecific_competition = alpha[1,1],
+                             N_max = Nupper[1],
+                             lower = rconstraints$lower[1],
+                             upper = rconstraints$upper[1])
+  
+  
+  rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
+                             N_max = Nupper[2],
+                             lower = rconstraints$lower[2],
+                             upper = rconstraints$upper[2])
+  
+  area_bounds <- ri_bound * rj_bound
+  
+  return(area_bounds)
+  
+  
+}
+
+structural_stability_wrapper <- function(R,
+                                         alpha,
+                                         rconstraints,
+                                         Nupper,
+                                         r){
+  
+  #first we check if our observed growth rates are feasible
+  feasiblity <- check_point(r =r,
+                                 R_max = R,
+                                 inv_alpha =  inverse_matrix(alpha),
+                                 rconstraints = rconstraints,
+                                 Nupper = Nupper)
+  feas_na <- is.na(feasiblity)
+  #in this case if it is NA it means it is unfeasible
+  feasiblity <-  ifelse(feas_na,0, feasiblity)
+  
+  #we do a mcm integration of the feasible area
+  integration<- integrate_area(R_max = R,
+                                    alpha = alpha,
+                                    rconstraints = rconstraints,
+                                    Nupper = Nupper,
+                                    desired_feasible = 1000,
+                                    max_samples = 1e4
+  )
+ 
+  
+  shape_bounds <- determine_boundary_shape(shape = integration$coords)
+  bounds <- shape_bounds$bounds
+  # and also the area the area of the feasibility domain
+  area <- shape_bounds$area
+  #with the bounds we can then get the distance from the limit of our growth rates
+  distances <- distance_from_limit(r=r,
+                                        shape = bounds,
+                                        feasibility = feasiblity)
+  distance_from_edge <- distances$growth_distance
+ 
+  #but also we get the proportion of things inside the convex hull
+  convex_mean <- calculate_convex(shape = bounds,
+                                  unfeasible = integration$unfeasible)
+  
+  area_alone <- area_species_alone(alpha = alpha,
+                                   Nupper = Nupper,
+                                    rconstraints = rconstraints)
+  
+  proportion <- area/ area_alone
+  
+  
+  results <- data.frame("area_feasible"= area,
+                        "area_alone"= area_alone,
+                        "proportion"= proportion,
+                        "convex"= convex_mean,
+                        "feasibility"= feasiblity,
+                        "distance"= distance_from_edge)
+  
+  return(results)
+  
+  
+  
+}
+
+
+
+
 

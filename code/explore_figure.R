@@ -15,15 +15,15 @@ make_figure<-function(mod,
   integration <- ggplot(mod) +
     geom_point(
       mapping = aes(
-        x = Omega,
-        y = distance_growth,
+        x = proportion,
+        y = distance_center,
         col = as.factor(feasibility)
       ),
       show.legend = FALSE
     ) +
     geom_point( mapping = aes(
-      x = Omega_mean,
-      y = distance_growth_mean
+      x = proportion_mean,
+      y = distance_center_mean
     ), col= "#e3004e") +
     theme_alba +
     scale_color_manual(values = c(col2, col1)) +
@@ -53,7 +53,7 @@ make_figure<-function(mod,
   
   mod_proportions <- extract_proportion_samples(mod = mod,
                                                 n_samples = n_samples)
-  
+  mod_proportions <- mod_proportions %>% unite("model", vero_model:trcy_model)
   
   
   plot_proportions <-ggplot(mod_proportions) +
@@ -87,4 +87,4 @@ make_figure<-function(mod,
 }
 
 
-make_figure(mod = example,n_samples = 100,name = "test.pdf")
+make_figure(mod = results_sunny_bounded,n_samples = 100,name = "test.pdf")

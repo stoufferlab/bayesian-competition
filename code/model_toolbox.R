@@ -313,7 +313,7 @@ posterior_feasibility <- function(vero_model,
    "feasibility_saavedra_mean" = feasibility_SA_mean,
    "proportion_mean"= mean_results$proportion,
    "area_mean"= mean_results$area_feasible,
-   "distance_center_mean"=  mean_results$distance,
+   "distance_mean"=  mean_results$distance,
    "feasibility_mean"= mean_results$feasibility,
    "R_mean"=R_mean,
    "convex_mean"= mean_results$convex)
@@ -395,11 +395,11 @@ posterior_feasibility <- function(vero_model,
       #our approximation ############################################
       
       results <- structural_stability_wrapper(
-        R = R,
+        R = R_post,
         alpha = alpha,
         rconstraints = rconstraints,
         Nupper = Nupper,
-        r = r
+        r = r_post
       )
       
     
@@ -410,7 +410,7 @@ posterior_feasibility <- function(vero_model,
         "feasibility_saavedra"= feasibility_post_SA,
         "proportion"= results$proportion, 
         "area" = results$area_alone,
-        "distance_center"= results$distance,
+        "distance"= results$distance,
         "feasibility" = results$feasibility,
         "Radius" = R_post,
         "convex"= results$convex,

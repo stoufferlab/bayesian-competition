@@ -16,22 +16,20 @@ make_figure<-function(mod,
     geom_point(
       mapping = aes(
         x = proportion,
-        y = distance_center,
+        y = distance,
         col = as.factor(feasibility)
       ),
       show.legend = FALSE
     ) +
     geom_point( mapping = aes(
       x = proportion_mean,
-      y = distance_center_mean
+      y = distance_mean
     ), col= "#e3004e") +
     theme_alba +
     scale_color_manual(values = c(col2, col1)) +
     facet_grid(trcy_model~vero_model)  +
-    geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")
-  #+
-  # ylim(-1,1)+
-  #xlim(0,0.05)
+    geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")+
+    xlim(0,2)
   
   fig1<- annotate_figure(integration,
                          
@@ -63,7 +61,7 @@ make_figure<-function(mod,
     theme_alba +
     scale_x_discrete(labels=c("BH-BH","BH-LV","BH-RC","LV-BH","LV-LV","LV-RC","RC-BH","RC-LV","RC-RC")) 
   
-  
+print(mod_proportions)  
   
   fig2 <- annotate_figure(plot_proportions,
                           bottom = text_grob("Model combination",
@@ -78,13 +76,20 @@ make_figure<-function(mod,
   p<-ggarrange(fig1, fig2,
                ncol = 1,
                nrow = 2, heights = c(1,0.5))
-  p
+  fig1
   
-  ggsave(filename = name,plot = p,width = 7,height = 9)
+  ggsave(filename = name,plot = fig1,width = 6.5,height =6.5 )
   #dev.off()
   
   
 }
 
 
-make_figure(mod = results_sunny_bounded,n_samples = 100,name = "test.pdf")
+make_figure(mod = results_sunny_bounded,n_samples = 10,name = "../bayesian_competition_ms//sunny_results.pdf")
+
+make_figure(mod = results_sunny_UNbounded,n_samples = 10,name = "../bayesian_competition_ms//sunny_results_unbounded.pdf")
+
+
+make_figure(mod = results_woody_bounded,n_samples = 10,name = "../bayesian_competition_ms/woody_results.pdf")
+
+make_figure(mod = results_woody_UNbounded,n_samples = 10,name = "../bayesian_competition_ms/woody_results_unbounded.pdf")

@@ -31,11 +31,11 @@ sj<- 0.9693324
 
 # the list of models over to iterate
 vero_models <- list( vero_bh_multispecies_poisson.rds,
-                    # vero_lv_multispecies_poisson.rds,
+                     vero_lv_multispecies_poisson.rds,
                      vero_rc_multispecies_poisson.rds)
 
 trcy_models<- list(trcy_bh_multispecies_poisson.rds,
-                  # trcy_lv_multispecies_poisson.rds,
+                   trcy_lv_multispecies_poisson.rds,
                    trcy_rc_multispecies_poisson.rds)
 
 model_grid <- combined_models(vero_models = vero_models,

@@ -1,240 +1,44 @@
 source("code/feasibility_toolbox.R")
-souce("code/figure_label.R")
-check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
-  #returns NA if point is outside boundary
-  #FALSE if it is inside boundary but infeasible
-  #TRUE if it is inside boundary and feasible
-  
-  if(!check_radius_boundaries(r = r,
-                              R_max = R_max)){
-    #print("out of r boundaries")
-    
-    return(NA)
-  }
-  
-  
-  
-  if(!check_r_boundaries(r = r,
-                         rconstraints = rconstraints)){
-    #  print("out of growth boundaries")
-    points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
-    return(NA)
-  }
-  
-  #solve fo abundances
-  N  <- calculate_abundances(r = r,
-                             inv_alpha = inv_alpha)
-  
-  if(!check_N_boundaries(N = N,
-                         Nupper = Nupper)){
-    # print("out of abundance boundaries")
-    points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=0.1))
-    return(NA)
-  }
-  
-  N_feasible <- (N > 0)
-  N_feasible <- all(N_feasible)
-  
-  return(N_feasible)
-}
+source("code/figure_label.R")
+
+pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 5, height = 8)
+
+
+par(oma=c(0,0,0,0),mar=c(3,3,2,2))
+
+layout.matrix <- matrix(c(1,2,
+                          3,4,
+                          5,6,
+                          7,8), nrow = 4, ncol = 2, byrow = T)
+layout(mat = layout.matrix, heights=c(1,1,1), widths = c(1,1)) 
+
 
 R<-3
 
-rconstraints <- list(
-  lower = c(-Inf, -Inf),
-  upper = c(Inf, Inf))
-
-alpha<- diag(2)
-alpha[2,1]<- -0.3
-alpha[1,2]<- 0.3
-
-Ni_max <- 1e3
-Nj_max <- 1e3
-
-Nupper <- c(i = Inf,
-            j = Inf)
-
-
-r<- c(0.7,0.7)
-
-pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 6, height = 6)
-
-par(mfrow=c(2,2))
-
-make_domain<- function(R,
-                       alpha,
-                       rconstraints,
-                       Nupper){
-  plot(0,0,
-       xlim=c(-R, R),
-       ylim=c(-R, R),
-       type='n',
-       xlab=expression(italic(r[i])),
-       ylab=expression(italic(r[j]))
-  )
-  abline(h=0,lty='dashed',lwd=1.5)
-  abline(v=0,lty='dashed',lwd=1.5)
-  
-  
-  integration_mean<- integrate_area(R_max = R,alpha = alpha,rconstraints = rconstraints,Nupper = Nupper,desired_feasible = 2000,max_samples = 1e5)
-  
-  Omega_mean <- integration_mean$proportion
-  #And also the coordinates of all the points that are feasible
-  shape_mean <- integration_mean$coords
-  #and the points that are unfeasible
-  unfeasible_mean <- integration_mean$unfeasible
-  # which tell us the bounds of the feasibility domain
-  shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
-  bounds_mean <- shape_bounds_mean$bounds
-  # and also the area the area of the feasibility domain
-  area_mean <- shape_bounds_mean$area
-  
-  
-  col1 <- rethinking::col.alpha("mediumseagreen", alpha=0.1)
-  col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
-  points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
-  points(unfeasible_mean$ri, unfeasible_mean$rj, pch=20, col=col2)
-  lines(bounds_mean$ri, bounds_mean$rj, col= "black", lwd=2)
-  
-  
-  
-}
-
-
-make_domain(R = R,
-            alpha = alpha,
-            rconstraints = rconstraints,
-            Nupper= Nupper)
-fig_label(text = "A", region = "figure", pos  ="topleft", cex=2)
-
-rconstraints <- list(
-  lower = c(-Inf, -1),
-  upper = c(1, Inf))
-
-
-make_domain(R = R,
-            alpha = alpha,
-            rconstraints = rconstraints,
-            Nupper= Nupper)
-
-fig_label(text = "B", region = "figure", pos  ="topleft", cex=2)
-
-
-Nupper <- c(i = 2,
-            j = 2)
-
-
-rconstraints <- list(
-  lower = c(-Inf, -Inf),
-  upper = c(Inf, Inf))
-
-
-
-make_domain(R = R,
-            alpha = alpha,
-            rconstraints = rconstraints,
-            Nupper= Nupper)
-
-fig_label(text = "C", region = "figure", pos  ="topleft", cex=2)
-
-
-check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
-  #returns NA if point is outside boundary
-  #FALSE if it is inside boundary but infeasible
-  #TRUE if it is inside boundary and feasible
-  
-  if(!check_radius_boundaries(r = r,
-                              R_max = R_max)){
-    #print("out of r boundaries")
-    
-    return(NA)
-  }
-  
-  
-  
-  if(!check_r_boundaries(r = r,
-                         rconstraints = rconstraints)){
-    #  print("out of growth boundaries")
-    points(r[1],r[2], pch=20, col = rethinking::col.alpha("#5b00c6",alpha=0.1))
-    return(NA)
-  }
-  
-  #solve fo abundances
-  N  <- calculate_abundances(r = r,
-                             inv_alpha = inv_alpha)
-  
-  if(!check_N_boundaries(N = N,
-                         Nupper = Nupper)){
-    # print("out of abundance boundaries")
-    points(r[1],r[2], pch=20, col = rethinking::col.alpha("#5b00c6",alpha=0.1))
-    return(NA)
-  }
-  
-  N_feasible <- (N > 0)
-  N_feasible <- all(N_feasible)
-  
-  return(N_feasible)
-}
-
-
-
-Nupper <- c(i = 2,
-            j = 2)
-
-
-rconstraints <- list(
-  lower = c(-Inf, -1),
-  upper = c(1, Inf))
-
-
-
-make_domain(R = R,
-            alpha = alpha,
-            rconstraints = rconstraints,
-            Nupper= Nupper)
-
-fig_label(text = "D", region = "figure", pos  ="topleft", cex=2)
-
-dev.off()
-
-
-make_projection<- function(R,
-                           alpha,
-                           rconstraints,
-                           Nupper,
-                           r){
-  
-
-  
-  
-  
-  
-  
-  
-
-
-integration_mean<- integrate_area(R_max = R,
-                                           alpha = alpha,
-                                           rconstraints = rconstraints,
-                                           Nupper = Nupper,
-                                           desired_feasible = 5000,
-                                           max_samples = 1e6
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
 )
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
 
-#And also the coordinates of all the points that are feasible
-shape_mean <- integration_mean$coords
-#and the points that are unfeasible
-unfeasible_mean <- integration_mean$unfeasible
-# which tell us the bounds of the feasibility domain
-shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
-bounds_mean <- shape_bounds_mean$bounds
-# and also the area the area of the feasibility domain
-area_mean <- shape_bounds_mean$area
-#with the bounds we can then get the distance from the limit of our growth rates
-distances_mean <- distance_from_limit(r=r,
-                                      shape = bounds_mean,
-                                      feasibility = 1)
 
+
+rect(xleft = 0,
+     xright = 4,
+     ytop = 4,
+     ybottom = 0,
+     col = rethinking::col.alpha("grey50", 1),
+     borde= NA)
+
+
+
+fig_label(text = "A", region = "figure", pos  ="topleft", cex=1.5)
+
+# No constraints ----------------------------------------------------------
 
 
 plot(0,0,
@@ -247,14 +51,466 @@ plot(0,0,
 abline(h=0,lty='dashed',lwd=1.5)
 abline(v=0,lty='dashed',lwd=1.5)
 
-col1 <- rethinking::col.alpha("grey50", alpha=0.1)
+Nupper <- c(i = 10,
+            j = 10)
+
+rconstraints <- list(
+  lower = c(-Inf, -Inf),
+  upper = c(Inf, Inf))
+
+alpha<- diag(2)
+alpha[1,2]<-0.4
+alpha[2,1]<-0.4
+
+integration_mean<- integrate_area(R_max = 5,
+                                  alpha = alpha,
+                                  rconstraints = rconstraints,
+                                  Nupper = Nupper,
+                                  desired_feasible = 5000,
+                                  max_samples = 3e5)
+
+
+#And also the coordinates of all the points that are feasible
+shape_mean <- integration_mean$coords
+
+# which tell us the bounds of the feasibility domain
+shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
+bounds_mean <- shape_bounds_mean$bounds
+# and also the area the area of the feasibility domain
+area_mean <- shape_bounds_mean$area
+
+
+col1 <- rethinking::col.alpha("mediumseagreen", alpha=1)
+col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
 points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
-lines(bounds_mean$ri, bounds_mean$rj, col= "mediumseagreen", lwd=2)
-points(r[1],r[2], col="#e3004e", pch=18)
+#lines(bounds_mean$ri, bounds_mean$rj, col= "black", lwd=2)
 
-return(list(area_mean, distances_mean, integration_mean$proportion))
+fig_label(text = "B", region = "figure", pos  ="topleft", cex=1.5)
 
+
+
+# C -----------------------------------------------------------------------
+
+Ni_max <- 2
+Nj_max <- 2
+
+
+ri_bound <- get_boundary_r(intraspecific_competition = alpha[1,1],
+                           N_max = Ni_max,
+                           lower = -Inf,
+                           upper = Inf)
+
+
+rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
+                           N_max = Nj_max,
+                           lower = -Inf,
+                           upper = Inf)
+
+
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
+)
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
+
+
+
+
+
+rect(xleft = 0,
+     xright = 4,
+     ytop = 4,
+     ybottom = 0,
+     col = rethinking::col.alpha("#c60044", alpha = 1))
+
+
+
+rect(xleft = 0,
+     xright = ri_bound,
+     ytop = rj_bound,
+     ybottom = 0,
+     col = rethinking::col.alpha("grey50", 1),
+     border = NA
+            )
+
+
+fig_label(text = "C", region = "figure", pos  ="topleft", cex=1.5)
+# D ---------------------------------------------------
+
+rconstraints <- list(
+  lower = c(-Inf, -Inf),
+  upper = c(Inf, Inf))
+
+Ni_max <- 2
+Nj_max <- 2
+
+Nupper <- c(i = Ni_max,
+            j = Nj_max)
+
+check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
+  #returns NA if point is outside boundary
+  #FALSE if it is inside boundary but infeasible
+  #TRUE if it is inside boundary and feasible
+  
+  if(!check_radius_boundaries(r = r,
+                              R_max = R_max)){
+    if(r[1]>0 & r[2]>0){
+      points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=1))
+    }
+   
+    
+    return(NA)
+  }
+  
+  
+  
+  if(!check_r_boundaries(r = r,
+                         rconstraints = rconstraints)){
+    #  print("out of growth boundaries")
+    #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
+    return(NA)
+  }
+  
+  #solve fo abundances
+  N  <- calculate_abundances(r = r,
+                             inv_alpha = inv_alpha)
+  
+  if(!check_N_boundaries(N = N,
+                         Nupper = Nupper)){
+    # print("out of abundance boundaries")
+    if(r[1]>0 & r[2]>0){
+      points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=1))}
+    return(NA)
+  }
+  
+  N_feasible <- (N > 0)
+  N_feasible <- all(N_feasible)
+  
+  return(N_feasible)
+}
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
+)
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
+
+source("code/determine_radius.R")
+
+R_det <- determine_radius(alpha = alpha,Ni_max = Ni_max,Nj_max = Nj_max
+                          )
+
+
+integration_mean<- integrate_area(R_max = R_det,
+                                  alpha = alpha,
+                                  rconstraints = rconstraints,
+                                  Nupper = Nupper,
+                                  desired_feasible = 5000,
+                                  max_samples = 3e5)
+
+
+#And also the coordinates of all the points that are feasible
+shape_mean <- integration_mean$coords
+
+# which tell us the bounds of the feasibility domain
+shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
+bounds_mean <- shape_bounds_mean$bounds
+# and also the area the area of the feasibility domain
+area_mean <- shape_bounds_mean$area
+
+
+col1 <- rethinking::col.alpha("mediumseagreen", alpha=1)
+col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
+points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
+fig_label(text = "D", region = "figure", pos  ="topleft", cex=1.5)
+
+
+# growth constraints E ----------------------------------------------------
+
+
+Ni_max <- Inf
+Nj_max <- Inf
+
+
+ri_bound <- get_boundary_r(intraspecific_competition = alpha[1,1],
+                           N_max = Ni_max,
+                           lower = -Inf,
+                           upper = 1)
+
+
+rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
+                           N_max = Nj_max,
+                           lower = -1,
+                           upper = Inf)
+
+
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
+)
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
+
+
+
+
+
+rect(xleft = 0,
+     xright = 4,
+     ytop = 4,
+     ybottom = 0,
+     col = rethinking::col.alpha("grey50", alpha = 1))
+
+
+
+rect(xleft = ri_bound,
+     xright = 5,
+     ytop = 5,
+     ybottom = 0,
+     col = rethinking::col.alpha("#1f00c6", 1),
+     border = NA
+)
+
+
+fig_label(text = "E", region = "figure", pos  ="topleft", cex=1.5)
+
+
+# growth rate constraints  F ----------------------------------------------
+
+
+
+rconstraints <- list(
+  lower = c(-Inf, -1),
+  upper = c(1, Inf))
+
+Nupper <- c(i = Inf,
+            j = Inf)
+
+check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
+  #returns NA if point is outside boundary
+  #FALSE if it is inside boundary but infeasible
+  #TRUE if it is inside boundary and feasible
+  
+  if(!check_radius_boundaries(r = r,
+                              R_max = R_max)){
+    #f(r[1]>0 & r[2]>0){
+      #points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=1))
+    #}
+    
+    
+    return(NA)
+  }
+  
+  
+  
+  if(!check_r_boundaries(r = r,
+                         rconstraints = rconstraints)){
+    #  print("out of growth boundaries")
+    
+    if(r[1]>0 & r[2]>0){
+      points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=1))
+    }
+    #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
+    return(NA)
+  }
+  
+  #solve fo abundances
+  N  <- calculate_abundances(r = r,
+                             inv_alpha = inv_alpha)
+  
+  if(!check_N_boundaries(N = N,
+                         Nupper = Nupper)){
+    return(NA)
+  }
+  
+  N_feasible <- (N > 0)
+  N_feasible <- all(N_feasible)
+  
+  return(N_feasible)
+}
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
+)
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
+
+
+integration_mean<- integrate_area(R_max = 5,
+                                  alpha = alpha,
+                                  rconstraints = rconstraints,
+                                  Nupper = Nupper,
+                                  desired_feasible = 5000,
+                                  max_samples = 3e5)
+
+
+#And also the coordinates of all the points that are feasible
+shape_mean <- integration_mean$coords
+
+# which tell us the bounds of the feasibility domain
+shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
+bounds_mean <- shape_bounds_mean$bounds
+# and also the area the area of the feasibility domain
+area_mean <- shape_bounds_mean$area
+
+
+col1 <- rethinking::col.alpha("mediumseagreen", alpha=1)
+col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
+points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
+fig_label(text = "F", region = "figure", pos  ="topleft", cex=1.5)
+
+
+
+
+
+
+
+# both --------------------------------------------------------------------
+
+rconstraints <- list(
+  lower = c(-Inf, -1),
+  upper = c(1, Inf))
+
+
+Ni_max <-2
+Nj_max <-2
+Nupper <- c(i = Ni_max,
+            j = Nj_max)
+
+
+
+ri_bound <- get_boundary_r(intraspecific_competition = alpha[1,1],
+                           N_max = Ni_max,
+                           lower = rconstraints$lower[1],
+                           upper = rconstraints$upper[1])
+
+
+rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
+                           N_max = Nj_max,
+                           lower = rconstraints$lower[2],
+                           upper = rconstraints$upper[2])
+
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
+)
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
+
+
+
+rect(xleft = 0,
+     xright = ri_bound,
+     ytop = rj_bound,
+     ybottom = 0,
+     border = NA,
+     col = rethinking::col.alpha("grey50", 1))
+
+fig_label(text = "G", region = "figure", pos  ="topleft", cex=1.5)
+
+# final -------------------------------------------------------------------
+
+
+rconstraints <- list(
+  lower = c(-Inf, -1),
+  upper = c(1, Inf))
+
+
+Ni_max <-2
+Nj_max <-2
+Nupper <- c(i = Ni_max,
+            j = Nj_max)
+check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
+  #returns NA if point is outside boundary
+  #FALSE if it is inside boundary but infeasible
+  #TRUE if it is inside boundary and feasible
+  
+  if(!check_radius_boundaries(r = r,
+                              R_max = R_max)){
+    
+    
+    
+    return(NA)
+  }
+  
+  
+  
+  if(!check_r_boundaries(r = r,
+                         rconstraints = rconstraints)){
+    #  print("out of growth boundaries")
+    #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
+    return(NA)
+  }
+  
+  #solve fo abundances
+  N  <- calculate_abundances(r = r,
+                             inv_alpha = inv_alpha)
+  
+  if(!check_N_boundaries(N = N,
+                         Nupper = Nupper)){
+   
+    return(NA)
+  }
+  
+  N_feasible <- (N > 0)
+  N_feasible <- all(N_feasible)
+  
+  return(N_feasible)
 }
 
 
-make_projection(R = R,alpha = alpha,rconstraints = rconstraints,Nupper = Nupper,r = r)
+R_det <- determine_radius(alpha = alpha,Ni_max = Ni_max,Nj_max = Nj_max
+)
+
+
+plot(0,0,
+     xlim=c(-R, R),
+     ylim=c(-R, R),
+     type='n',
+     xlab=expression(italic(r[i])),
+     ylab=expression(italic(r[j]))
+)
+abline(h=0,lty='dashed',lwd=1.5)
+abline(v=0,lty='dashed',lwd=1.5)
+
+integration_mean<- integrate_area(R_max = R_det,
+                                  alpha = alpha,
+                                  rconstraints = rconstraints,
+                                  Nupper = Nupper,
+                                  desired_feasible = 5000,
+                                  max_samples = 3e5)
+
+
+#And also the coordinates of all the points that are feasible
+shape_mean <- integration_mean$coords
+
+# which tell us the bounds of the feasibility domain
+shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
+bounds_mean <- shape_bounds_mean$bounds
+# and also the area the area of the feasibility domain
+area_mean <- shape_bounds_mean$area
+
+
+col1 <- rethinking::col.alpha("mediumseagreen", alpha=1)
+col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
+points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
+fig_label(text = "H", region = "figure", pos  ="topleft", cex=1.5)
+
+
+dev.off()

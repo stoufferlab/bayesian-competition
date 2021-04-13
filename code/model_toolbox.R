@@ -340,8 +340,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post_sample<-vero_post[1:100, ]
-    trcy_post_sample<-trcy_post[1:100, ]
+    vero_post_sample<-vero_post[1:200, ]
+    trcy_post_sample<-trcy_post[1:200, ]
     
     #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post_sample),1) %>% as.list()

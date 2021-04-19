@@ -1,7 +1,7 @@
 library(ggplot2)
 library(tidyverse)
 source("code/gg_theme.R")
-source("code/boxplot_proportions.R")
+
 
 
 make_figure<-function(mod,
@@ -33,9 +33,9 @@ make_figure<-function(mod,
   
   fig1<- annotate_figure(integration,
                          
-                         bottom = text_grob( expression('Feasibility domain,'~Omega),
+                         bottom = text_grob( "Relative coexistence area",
                                              size = 12),
-                         left = text_grob(expression('Distance from the boundary,'~theta),
+                         left = text_grob("",
                                           rot = 90, size = 12),
                          top = text_grob("Velleia rosea",
                                          size = 12,

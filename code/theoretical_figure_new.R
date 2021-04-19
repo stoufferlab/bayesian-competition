@@ -1,11 +1,12 @@
 source("code/feasibility_toolbox.R")
 source("code/figure_label.R")
 
-pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 5, height = 8)
+pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 4, height = 7.5)
 
 
-par(oma=c(0,0,0,0),mar=c(3,3,2,2))
-
+#par(oma=c(0,0,0,0),mar=c(3,3,2,2))
+#par(oma=c(0,0,0,0), mar=c(3,3,3,3))
+par(pty="s", oma=c(0,0,0,0), mar=c(4,0,2,0))
 layout.matrix <- matrix(c(1,2,
                           3,4,
                           5,6,

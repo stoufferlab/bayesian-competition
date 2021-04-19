@@ -3,7 +3,7 @@ require(ggplot2)
 
 theme_alba<- theme(#legend.title = element_text(size = 12),
   legend.text = element_text(size = 8),
-  legend.position = c(0.850, 0.5),
+  legend.position = c(0.7, 0.7),
   axis.title.x = element_blank(),
   axis.title.y = element_blank(),
   text = element_text(size = 10),

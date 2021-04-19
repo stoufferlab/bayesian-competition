@@ -9,11 +9,17 @@ source("code/read_models.R")
 source("code/model_toolbox.R")
 
 
-#survival and germination for Vero (i) and Trcy(j)
-gi<-.372
-si<-.556
-gj<-.258
-sj<-.033
+# #survival and germination for Vero (i) and Trcy(j)
+# gi<-.372
+# si<-.556
+# gj<-.258
+# sj<-.033
+
+#isaacs mean estimates
+gi<- 0.9641188
+si<- 0.9654804
+gj<- 0.4743974
+sj<- 0.9693324
 
 
 
@@ -34,14 +40,13 @@ multiple_equilibriums <-function(..., s,g) {
 
 
 #This is the order : beverton holt (bh), lotka volterra (lv), ricker (rc) and hassell (hs)
-model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker", "Hassell")
+model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker")
 
 
 vero <- multiple_equilibriums(
   vero_bh_multispecies_poisson.rds,
   vero_lv_multispecies_poisson.rds,
   vero_rc_multispecies_poisson.rds,
-  vero_hs_multispecies_poisson.rds,
   s = si,
   g = gi
 )
@@ -51,7 +56,6 @@ trcy <- multiple_equilibriums(
   trcy_bh_multispecies_poisson.rds,
   trcy_lv_multispecies_poisson.rds,
   trcy_rc_multispecies_poisson.rds,
-  trcy_hs_multispecies_poisson.rds,
   s = sj,
   g = gj
 )
@@ -64,43 +68,39 @@ vero$model<-factor(vero$model, levels= model_names)
 vero_0<-ggplot(vero) +
   geom_density(mapping = aes(x = equilibrium, fill = model, linetype=model) ,
                alpha = 0.8, show.legend = FALSE) +
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  scale_linetype_manual(values=c("solid","dashed", "dotted"))+
   scale_fill_manual(values=palette_alba)+
   theme_alba+
-  xlim(0,400) +
-  ylim(0,0.027)
+  xlim(0,2000)
 
 
 
 trcy_0<-ggplot(trcy) +
   geom_density(mapping = aes(x = equilibrium, fill = model, linetype=model) ,
                alpha = 0.8, show.legend = FALSE) +
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  scale_linetype_manual(values=c("solid","dashed", "dotted"))+
   scale_fill_manual(values=palette_alba)+
   theme_alba +
-  xlim(0,400)+
-  ylim(0,0.027)
+  xlim(0,2000)
 
 
 
 vero_1<-ggplot(vero) +
   geom_density(mapping = aes(x = env_equilibrium, fill = model, linetype=model) ,
                alpha = 0.8,show.legend = FALSE) +
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  scale_linetype_manual(values=c("solid","dashed", "dotted"))+
   scale_fill_manual(values=palette_alba) +
   theme_alba +
-  xlim(0,1500)+
-  ylim(0,0.0125)
+  xlim(0,2000)
 
 
 trcy_1<-ggplot(trcy) +
   geom_density(mapping = aes(x = env_equilibrium, fill = model, linetype=model) ,
                alpha = 0.8, show.legend = TRUE) +
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  scale_linetype_manual(values=c("solid","dashed", "dotted"))+
   scale_fill_manual(values=palette_alba)+
   theme_alba + 
-  xlim(0,1500) +
-  ylim(0,0.0125)
+  xlim(0,2000) 
 
 
 
@@ -111,7 +111,9 @@ trcy_1<-ggplot(trcy) +
 all_figures<-ggarrange( vero_0, trcy_0 ,
                         vero_1, trcy_1,
           labels = c("A", "B", "C", "D"),
-          ncol = 2, nrow = 2)
+          ncol = 2, 
+          nrow = 2,
+          font.label = list(face="plain"))
 
 # 
 # env_figures<-ggarrange( vero_1, trcy_1 ,
@@ -120,8 +122,8 @@ all_figures<-ggarrange( vero_0, trcy_0 ,
 # 
 
 
-setwd("/home/alba/bayesian_competiton_ms")
-pdf(file = "equilibrium.pdf", width = 7, height = 7/1.6)
+
+pdf(file = "../bayesian_competition_ms//equilibrium.pdf", width = 8, height = 6)
 annotate_figure(all_figures,
              
                 bottom = text_grob("Monoculture equilibrium abundance",
@@ -132,7 +134,7 @@ annotate_figure(all_figures,
  
 dev.off()
 
-setwd("/home/alba/bayesian-competition")
+
 
 # 
 # 

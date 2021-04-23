@@ -123,12 +123,12 @@ all_figures<-ggarrange( vero_0, trcy_0 ,
 
 
 
-pdf(file = "../bayesian_competition_ms//equilibrium.pdf", width = 8, height = 6)
+pdf(file = "../bayesian_competition_ms//equilibrium.pdf", width = 7, height = 5)
 annotate_figure(all_figures,
              
                 bottom = text_grob("Monoculture equilibrium abundance",
-                                  size = 14),
-                left = text_grob("Density",  rot = 90, size = 14),
+                                  size = 12),
+                left = text_grob("Density",  rot = 90, size = 12),
                 
 )
  

@@ -344,14 +344,17 @@ get_boundary_r <-function(intraspecific_competition,
                           upper){
   max_growth_rate <- intraspecific_competition * N_max
   
-  if( intraspecific_competition > 0){
+  #if there is facilitation, then the area alone should include negative growth rates, 
+  #but still be limited by model constraints
+  if( intraspecific_competition < 0){
     
-    bounds <- min(max_growth_rate, upper)
-    return(bounds)
+    bounds <- max(max_growth_rate, lower)
+
     
   }else{
-    bounds <- max(max_growth_rate, lower)
-    return(bounds)
+    bounds <- min(max_growth_rate, upper)
+    
+  
   }
   
   return(bounds)
@@ -375,7 +378,7 @@ area_species_alone <- function(alpha,
                              lower = rconstraints$lower[2],
                              upper = rconstraints$upper[2])
   
-  area_bounds <- ri_bound * rj_bound
+  area_bounds <-abs(  ri_bound * rj_bound)
   
   return(area_bounds)
   
@@ -403,8 +406,8 @@ structural_stability_wrapper <- function(R,
                                     alpha = alpha,
                                     rconstraints = rconstraints,
                                     Nupper = Nupper,
-                                    desired_feasible = 1000,
-                                    max_samples = 1e4
+                                    desired_feasible = 2000,
+                                    max_samples = 5e5
   )
  
   
@@ -421,6 +424,7 @@ structural_stability_wrapper <- function(R,
   #but also we get the proportion of things inside the convex hull
   convex_mean <- calculate_convex(shape = bounds,
                                   unfeasible = integration$unfeasible)
+  
   
   area_alone <- area_species_alone(alpha = alpha,
                                    Nupper = Nupper,

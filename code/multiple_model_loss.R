@@ -8,28 +8,26 @@ source("code/per_capita_loss.R")
 source("code/read_models.R")
 source("code/model_loss.R")
 
-model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker", "Hassell")
-loss_functions <- list(bh_loss, lv_loss, rc_loss, hs_loss)
+model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker")
+loss_functions <- list(bh_loss, lv_loss, rc_loss)
 
 vero_models <-list(vero_bh_multispecies_poisson.rds,
                    vero_lv_multispecies_poisson.rds,
-                   vero_rc_multispecies_poisson.rds,
-                   vero_hs_multispecies_poisson.rds)
+                   vero_rc_multispecies_poisson.rds)
 
 trcy_models<-list(trcy_bh_multispecies_poisson.rds,
                   trcy_lv_multispecies_poisson.rds,
-                  trcy_rc_multispecies_poisson.rds,
-                  trcy_hs_multispecies_poisson.rds)
+                  trcy_rc_multispecies_poisson.rds)
 
 vero_loss <- multiple_loss(models = vero_models,
                            model_names = model_names,
                            loss_fucntions = loss_functions,
-                           neighbors = 200  )
+                           neighbors = 60  )
 
 trcy_loss <- multiple_loss(models = trcy_models,
                            model_names = model_names,
                            loss_fucntions = loss_functions,
-                           neighbors = 200  )
+                           neighbors =  60 )
 
 #we need to tell it the order of stuff, always as the model names
 trcy_loss$model<-factor(trcy_loss$model, levels = model_names)
@@ -80,12 +78,12 @@ vero_figures<-ggarrange( vero_cons_0 , vero_het_0, vero_cons_1, vero_het_1,
 
 
 
-pdf(file = "results/vero_loss.pdf", width = 8, height = 8.5/1.6)
+pdf(file = "../bayesian_competition_ms//vero_loss.pdf", width = 7, height = 7/1.6)
 annotate_figure(vero_figures,
                 
                 bottom = text_grob("Neighbor density ",
-                                   size = 14),
-                left = text_grob("Per capita loss",  rot = 90, size = 14))
+                                   size = 12),
+                left = text_grob("Per capita loss",  rot = 90, size = 12))
 
 
 dev.off()
@@ -132,12 +130,12 @@ trcy_figures<-ggarrange( trcy_cons_0 , trcy_het_0, trcy_cons_1, trcy_het_1,
 
 
 
-pdf(file = "results/trcy_loss.pdf", width = 8, height = 8.5/1.6)
+pdf(file = "../bayesian_competition_ms//trcy_loss.pdf", width = 7, height = 7/1.6)
 annotate_figure(trcy_figures,
                 
                 bottom = text_grob("Neighbor density ",
-                                   size = 14),
-                left = text_grob("Per capita loss",  rot = 90, size = 14))
+                                   size = 12),
+                left = text_grob("Per capita loss",  rot = 90, size = 12))
 
 
 dev.off()

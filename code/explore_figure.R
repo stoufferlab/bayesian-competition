@@ -5,12 +5,16 @@ source("code/gg_theme.R")
 
 
 make_figure<-function(mod,
-                      n_samples,
                       name){
   
 
-  col1 <- rethinking::col.alpha("mediumseagreen", .8)
-  col2 <- rethinking::col.alpha("grey50",.8)
+  col1 <- rethinking::col.alpha("mediumseagreen", .3)
+  col2 <- rethinking::col.alpha("grey60",.3)
+  
+  col3<- rethinking::col.alpha("#e3004e", 1)
+
+  
+  
   
   integration <- ggplot(mod) +
     geom_point(
@@ -23,19 +27,25 @@ make_figure<-function(mod,
     ) +
     geom_point( mapping = aes(
       x = proportion_mean,
-      y = distance_mean
-    ), col= "#e3004e") +
+      y = distance_mean,
+      shape= as.factor(feasibility_mean)),
+      size=3,
+      col=col3,
+      show.legend = FALSE ) +
     theme_alba +
     scale_color_manual(values = c(col2, col1)) +
     facet_grid(trcy_model~vero_model)  +
     geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")+
-    xlim(0,2)
+    xlim(0,1.1)
+  
+ 
   
   fig1<- annotate_figure(integration,
                          
                          bottom = text_grob( "Relative coexistence area",
                                              size = 12),
-                         left = text_grob("",
+                      
+                         left = text_grob("Distance from the edge, D",
                                           rot = 90, size = 12),
                          top = text_grob("Velleia rosea",
                                          size = 12,
@@ -49,47 +59,20 @@ make_figure<-function(mod,
   )
   
   
-  mod_proportions <- extract_proportion_samples(mod = mod,
-                                                n_samples = n_samples)
-  mod_proportions <- mod_proportions %>% unite("model", vero_model:trcy_model)
-  
-  
-  plot_proportions <-ggplot(mod_proportions) +
-    geom_boxplot(mapping = aes(x=model,
-                               y=proportions),
-                 fill="mediumseagreen") +
-    theme_alba +
-    scale_x_discrete(labels=c("BH-BH","BH-LV","BH-RC","LV-BH","LV-LV","LV-RC","RC-BH","RC-LV","RC-RC")) 
-  
-print(mod_proportions)  
-  
-  fig2 <- annotate_figure(plot_proportions,
-                          bottom = text_grob("Model combination",
-                                             size = 12),
-                          left = text_grob("Proportion of coexistence",
-                                           rot = 90, size =12))
-  
-  
-  
-  
-  #pdf("test2", width = 7, height = 9)
-  p<-ggarrange(fig1, fig2,
-               ncol = 1,
-               nrow = 2, heights = c(1,0.5))
-  fig1
-  
-  ggsave(filename = name,plot = fig1,width = 6.5,height =6.5 )
+ 
+  ggsave(filename = name,plot = fig1,width = 7,height =7)
   #dev.off()
   
   
 }
 
 
-make_figure(mod = results_sunny_bounded,n_samples = 10,name = "../bayesian_competition_ms//sunny_results.pdf")
+#make_figure(mod = results_sunny_bounded,name = "../bayesian_competition_ms//sunny_results.pdf")
 
-make_figure(mod = results_sunny_UNbounded,n_samples = 10,name = "../bayesian_competition_ms//sunny_results_unbounded.pdf")
+#make_figure(mod = results_sunny_UNbounded,n_samples = 10,name = "../bayesian_competition_ms//sunny_results_unbounded.pdf")
 
 
-make_figure(mod = results_woody_bounded,n_samples = 10,name = "../bayesian_competition_ms/woody_results.pdf")
+make_figure(mod = results_woody_bounded,name = "../bayesian_competition_ms/woody_results.pdf")
 
-make_figure(mod = results_woody_UNbounded,n_samples = 10,name = "../bayesian_competition_ms/woody_results_unbounded.pdf")
+#make_figure(mod = results_woody_UNbounded,n_samples = 10,name = "../bayesian_competition_ms/woody_results_unbounded.pdf")
+

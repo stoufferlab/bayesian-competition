@@ -17,21 +17,25 @@ layout(mat = layout.matrix, heights=c(1,1,1), widths = c(1,1))
 R<-3
 
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
+#abline(h=0,lty='dashed',lwd=1.5)
+#abline(v=0,lty='dashed',lwd=1.5)
 
 
 
-rect(xleft = 0,
+rect(xleft = -1,
      xright = 4,
      ytop = 4,
-     ybottom = 0,
+     ybottom = -1,
      col = rethinking::col.alpha("grey50", 1),
      borde= NA)
 
@@ -43,14 +47,16 @@ fig_label(text = "A", region = "figure", pos  ="topleft", cex=1.5)
 
 
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
 
 Nupper <- c(i = 10,
             j = 10)
@@ -109,31 +115,32 @@ rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
 
 
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
 
 
 
 
-
-rect(xleft = 0,
+rect(xleft = -1,
      xright = 4,
      ytop = 4,
-     ybottom = 0,
+     ybottom = -1,
      col = rethinking::col.alpha("#c60044", alpha = 1))
 
 
 
-rect(xleft = 0,
+rect(xleft = -1,
      xright = ri_bound,
      ytop = rj_bound,
-     ybottom = 0,
+     ybottom = -1,
      col = rethinking::col.alpha("grey50", 1),
      border = NA
             )
@@ -193,15 +200,18 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   return(N_feasible)
 }
+
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
 
 source("code/determine_radius.R")
 
@@ -253,23 +263,24 @@ rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
 
 
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
 
 
 
 
-
-rect(xleft = 0,
+rect(xleft = -1,
      xright = 4,
      ytop = 4,
-     ybottom = 0,
+     ybottom = -1,
      col = rethinking::col.alpha("grey50", alpha = 1))
 
 
@@ -277,7 +288,7 @@ rect(xleft = 0,
 rect(xleft = ri_bound,
      xright = 5,
      ytop = 5,
-     ybottom = 0,
+     ybottom = -1,
      col = rethinking::col.alpha("#1f00c6", 1),
      border = NA
 )
@@ -339,16 +350,18 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   return(N_feasible)
 }
+
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
-
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
 
 integration_mean<- integrate_area(R_max = 5,
                                   alpha = alpha,
@@ -376,6 +389,14 @@ fig_label(text = "F", region = "figure", pos  ="topleft", cex=1.5)
 
 
 
+
+rect(xleft = ri_bound,
+     xright = 5,
+     ytop = 5,
+     ybottom = -1,
+     col = rethinking::col.alpha("#1f00c6", 1),
+     border = NA
+)
 
 
 
@@ -405,21 +426,25 @@ rj_bound <- get_boundary_r(intraspecific_competition = alpha[2,2],
                            upper = rconstraints$upper[2])
 
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
+#abline(h=0,lty='dashed',lwd=1.5)
+#abline(v=0,lty='dashed',lwd=1.5)
 
 
 
-rect(xleft = 0,
+rect(xleft = -1,
      xright = ri_bound,
      ytop = rj_bound,
-     ybottom = 0,
+     ybottom = -1,
      border = NA,
      col = rethinking::col.alpha("grey50", 1))
 
@@ -465,7 +490,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   if(!check_N_boundaries(N = N,
                          Nupper = Nupper)){
-   
+    
     return(NA)
   }
   
@@ -481,14 +506,16 @@ R_det <- determine_radius(alpha = alpha,Ni_max = Ni_max,Nj_max = Nj_max
 
 
 plot(0,0,
-     xlim=c(-R, R),
-     ylim=c(-R, R),
+     xlim=c(0, R),
+     ylim=c(0, R),
      type='n',
      xlab=expression(italic(r[i])),
-     ylab=expression(italic(r[j]))
+     ylab=expression(italic(r[j])),
+     xaxt="n",
+     yaxt="n"
 )
-abline(h=0,lty='dashed',lwd=1.5)
-abline(v=0,lty='dashed',lwd=1.5)
+axis(side = 1, at=c(0,1,2,3), labels = TRUE)
+axis(side = 2, at=c(0,1,2,3), labels = TRUE)
 
 integration_mean<- integrate_area(R_max = R_det,
                                   alpha = alpha,

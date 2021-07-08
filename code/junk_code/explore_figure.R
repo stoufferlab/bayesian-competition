@@ -8,13 +8,13 @@ make_figure<-function(mod,
                       name){
   
 
-  col1 <- rethinking::col.alpha("mediumseagreen", .3)
-  col2 <- rethinking::col.alpha("grey60",.3)
+  col1 <- rethinking::col.alpha("mediumseagreen", .5)
+  col2 <- rethinking::col.alpha("grey60",.5)
   
   col3<- rethinking::col.alpha("#e3004e", 1)
 
   
-  
+  mod <- filter(mod, detection ==1)
   
   integration <- ggplot(mod) +
     geom_point(
@@ -36,7 +36,7 @@ make_figure<-function(mod,
     scale_color_manual(values = c(col2, col1)) +
     facet_grid(trcy_model~vero_model)  +
     geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")+
-    xlim(0,1.1)
+    xlim(0,1)
   
  
   
@@ -67,12 +67,15 @@ make_figure<-function(mod,
 }
 
 
-#make_figure(mod = results_sunny_bounded,name = "../bayesian_competition_ms//sunny_results.pdf")
+make_figure(mod = results_sunny_bounded,name = "sunny.pdf")
+
+
+make_figure(mod = results_woody_bounded,name = "woody.pdf")
 
 #make_figure(mod = results_sunny_UNbounded,n_samples = 10,name = "../bayesian_competition_ms//sunny_results_unbounded.pdf")
 
 
-make_figure(mod = results_woody_bounded,name = "../bayesian_competition_ms/woody_results.pdf")
+#make_figure(mod = results_woody_bounded,name = "../bayesian_competition_ms/woody_results.pdf")
 
 #make_figure(mod = results_woody_UNbounded,n_samples = 10,name = "../bayesian_competition_ms/woody_results_unbounded.pdf")
 

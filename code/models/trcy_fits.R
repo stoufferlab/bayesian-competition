@@ -6,7 +6,7 @@ source("code/models/model_formulas_multi.R")
 source("code/models/automate_fit.R")
 
 ### We create lists of formulas on which to iterat
-formulas <- list(hs = hassell_multi)
+formulas <- list(bh = beverton_holt_multi, rc= ricker_multi)
 
 
 model_fits(

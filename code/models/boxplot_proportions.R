@@ -38,7 +38,9 @@ extract_proportion_samples <- function(mod){
 }
 
 
-results_sunny_bounded <- readRDS("~/bayesian-competition/results_sunny_bounded.RDS")
+results_sunny_bounded <- readRDS("~/bayesian-competition/integration_objects/results_sunny_bounded.RDS")
+results_woody_bounded <- readRDS("~/bayesian-competition/integration_objects/results_woody_bounded.RDS")
+
 
 sunny <- extract_proportion_samples(mod = results_sunny_bounded)
 woody <- extract_proportion_samples(mod = results_woody_bounded)

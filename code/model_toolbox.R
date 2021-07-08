@@ -313,10 +313,12 @@ posterior_feasibility <- function(vero_model,
    "feasibility_saavedra_mean" = feasibility_SA_mean,
    "proportion_mean"= mean_results$proportion,
    "area_mean"= mean_results$area_feasible,
+   "area_alone_mean"= mean_results$area_alone,
    "distance_mean"=  mean_results$distance,
    "feasibility_mean"= mean_results$feasibility,
    "R_mean"=R_mean,
-   "convex_mean"= mean_results$convex)
+   "convex_mean"= mean_results$convex,
+   "detection_mean"= mean_results$detection)
  print(mean_parameters_results)
  
 
@@ -340,8 +342,8 @@ posterior_feasibility <- function(vero_model,
     
     print("working with the posterior distrubution")
     #just to work with them, should comment out this part aftewards
-    vero_post_sample<-vero_post[1:200, ]
-    trcy_post_sample<-trcy_post[1:200, ]
+    vero_post_sample<-vero_post[1:500, ]
+    trcy_post_sample<-trcy_post[1:500, ]
     
     #to iterate over rows without using a loop
     x <- seq(1,nrow(vero_post_sample),1) %>% as.list()
@@ -389,8 +391,9 @@ posterior_feasibility <- function(vero_model,
       theta_post_SA <- theta(r_c = centroid_post_SA,
                              r = r_post)
       
-      feasibility_post_SA <- test_feasibility_saavedra(alpha = alpha, 
-                                                       r = r_post)
+      feasibility_post_SA <-
+        test_feasibility_saavedra(alpha = alpha,
+                                  r = r_post)
       
       #our approximation ############################################
       
@@ -410,10 +413,12 @@ posterior_feasibility <- function(vero_model,
         "feasibility_saavedra"= feasibility_post_SA,
         "proportion"= results$proportion, 
         "area" = results$area_feasible,
+        "area_alone"= results$area_alone,
         "distance"= results$distance,
         "feasibility" = results$feasibility,
         "Radius" = R_post,
         "convex"= results$convex,
+        "detection"= results$detection,
         "r1" = r1,
         "r2"= r2,
         "alpha11"= alpha[1,1],
@@ -439,7 +444,8 @@ posterior_feasibility <- function(vero_model,
     
    # file <- paste0(name,".RDS")
     # print(file)
-   # saveRDS(object = all_results,file = paste0(name,".RDS")
+    integration_name <- paste0(vero_model$name,"_",trcy_model$name,"_",env,".RDS")
+    saveRDS(object = all_results,file = integration_name)
     return(all_results) 
   }
 }

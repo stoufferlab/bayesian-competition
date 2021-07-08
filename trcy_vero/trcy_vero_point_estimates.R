@@ -67,3 +67,18 @@ vero.germ.lower.ci<-plogis(3.2910-0.4407)
 vero.germ.upper.ci<-plogis(3.2910+0.4407)
 
 
+
+
+# table -------------------------------------------------------------------
+
+
+results <- data.frame("Species"= c("Vellia rosea", "Trachymene cyanopetala"),
+                      "Germination"= c(vero.mean.germ, trcy.mean.germ) %>% round(digits = 3),
+                      "Survival"=c(vero.mean.fill, trcy.mean.fill) %>% round(digits = 3))
+
+
+tab <- xtable::xtable(results)
+
+
+
+

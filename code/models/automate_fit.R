@@ -43,15 +43,15 @@ model_fits <-
           prior = priors,
           data =  data,
           family = distribution,
-          iter = 8000,
-          warmup = 4000,
+          iter = 4000,
+          warmup = 2000,
           cores   = 4,
           chains  = 4,
           inits = 1,
-         control = list(adapt_delta = .99)
+         control = list(adapt_delta = .99, max_treedepth=15)
         )
         
-        id <- paste0("model_objects/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
+        id <- paste0("model_objects_new/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
         saveRDS(model, file = id)
         
       }

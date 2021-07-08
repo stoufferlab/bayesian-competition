@@ -44,8 +44,8 @@ model_grid <- combined_models(vero_models = vero_models,
                                    gi =gi,
                                    gj =gj,
                                    sj=sj,
-                                   Ni_max = 1e3,
-                                   Nj_max =1e3,
+                                   Ni_max = 5e3,
+                                   Nj_max =5e3,
                                    env=FALSE,
                                    bounded = TRUE)
 

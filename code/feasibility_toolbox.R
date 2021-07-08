@@ -310,9 +310,11 @@ distance_from_limit <- function(r,
     #and we detect the distance from our growth rates to the point 0,0
     distance <- calculate_distance( p1 =  r,
                                     p2 = c(0,0))
+    detection <- 0
     distance <- -distance 
     results <- data.frame("center_distance" = distance,
-                          "growth_distance"= 0)
+                          "growth_distance"= 0,
+                          "detection"= detection)
 
   }else{
 
@@ -324,13 +326,16 @@ distance_from_limit <- function(r,
     center_distance <- shortest_distance(r= c(center$x, center$y),
                                          shape = shape,
                                          feasibility = 1)
+    
+    detection <- 1
     #we get the shortest distance from our growth rates to an edge
     growth_distance <- shortest_distance(r = r,
                                          shape = shape,
                                          feasibility = feasibility)
     
     results <- data.frame("center_distance" =center_distance,
-                          "growth_distance"= growth_distance)
+                          "growth_distance"= growth_distance,
+                          "detection"= detection)
 
   }
   return(results)
@@ -438,7 +443,8 @@ structural_stability_wrapper <- function(R,
                         "proportion"= proportion,
                         "convex"= convex_mean,
                         "feasibility"= feasiblity,
-                        "distance"= distance_from_edge)
+                        "distance"= distance_from_edge,
+                        "detection"= distances$detection)
   
   return(results)
   

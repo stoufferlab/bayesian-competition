@@ -10,10 +10,10 @@ library(brms)
 # )
 
 prior_multi= c(
-  prior(normal(0, 10), nlpar = "alphaii"),
-  prior(normal(0, 10), nlpar = "alphaij"),
-  prior(normal(0, 10), nlpar = "lambda"),
-  prior(normal(0, 10), nlpar = "alphaik")
+  prior(normal(0, 1), nlpar = "alphaii"),
+  prior(normal(0, 1), nlpar = "alphaij"),
+  prior(normal(0, 1), nlpar = "lambda"),
+  prior(normal(0, 1), nlpar = "alphaik")
 )
 
 # 

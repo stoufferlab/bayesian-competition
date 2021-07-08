@@ -1,5 +1,5 @@
 require("sp")
-require("SpatialGraph")
+#require("SpatialGraph")
 require("tidyverse")
 require("polylabelr")
 

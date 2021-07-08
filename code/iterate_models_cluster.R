@@ -1,10 +1,21 @@
 
 # cluster script ----------------------------------------------------------
 
-library(brms)
-library(tidyverse)
-library(rlist)
+require("brms")
+require("tidyverse")
+require("rlist")
+require("sp")
+#require("SpatialGraph")
+require("tidyverse")
+require("polylabelr")
+require("tidyverse")
+require("mvtnorm")
+require("cubature")
 
+
+
+require("shape")
+require("splancs")
 #We source everything known to human kind...
 
 source("code/read_models.R")

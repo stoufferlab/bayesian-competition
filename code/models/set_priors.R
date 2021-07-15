@@ -10,11 +10,20 @@ library(brms)
 # )
 
 prior_multi= c(
-  prior(normal(0, 1), nlpar = "alphaii"),
-  prior(normal(0, 1), nlpar = "alphaij"),
+  prior(normal(0, 0.1), nlpar = "alphaii"),
+  prior(normal(0, 0.1), nlpar = "alphaij"),
   prior(normal(0, 1), nlpar = "lambda"),
-  prior(normal(0, 1), nlpar = "alphaik")
+  prior(normal(0, 0.1), nlpar = "alphaik")
 )
+
+
+prior_lotka= c(
+  prior(normal(0, 0.01), nlpar = "alphaii"),
+  prior(normal(0, 0.01), nlpar = "alphaij"),
+  prior(normal(0, 0.1), nlpar = "lambda"),
+  prior(normal(0, 0.01), nlpar = "alphaik")
+)
+
 
 # 
 # prior_exp_pairs = c(

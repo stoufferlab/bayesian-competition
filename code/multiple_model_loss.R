@@ -8,15 +8,13 @@ source("code/per_capita_loss.R")
 source("code/read_models.R")
 source("code/model_loss.R")
 
-model_names <- c("Beverton-Holt", "Lotka-Volterra", "Ricker")
-loss_functions <- list(bh_loss, lv_loss, rc_loss)
+model_names <- c("Beverton-Holt", "Ricker")
+loss_functions <- list(bh_loss, rc_loss)
 
 vero_models <-list(vero_bh_multispecies_poisson.rds,
-                   vero_lv_multispecies_poisson.rds,
                    vero_rc_multispecies_poisson.rds)
 
 trcy_models<-list(trcy_bh_multispecies_poisson.rds,
-                  trcy_lv_multispecies_poisson.rds,
                   trcy_rc_multispecies_poisson.rds)
 
 vero_loss <- multiple_loss(models = vero_models,
@@ -35,10 +33,10 @@ vero_loss$model<-factor(vero_loss$model, levels= model_names)
 
 #trcy_loss <- trcy_loss %>% melt( id.vars = c("N", "model"), value.name = "response")
 
-yy <- 0.075
+yy <- 0.1
 vero_cons_0 <- ggplot(data=vero_loss, aes(x=N, y=conspecific_response)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = FALSE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = FALSE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy)+
@@ -46,24 +44,24 @@ vero_cons_0 <- ggplot(data=vero_loss, aes(x=N, y=conspecific_response)) +
 
 
 vero_het_0 <- ggplot(data=vero_loss, aes(x=N, y=heterospecific_response)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = TRUE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = TRUE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy) +
   ggtitle("Heterospecifics")
 
 vero_cons_1 <- ggplot(data=vero_loss, aes(x=N, y=conspecific_response_env)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = FALSE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = FALSE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy)
 
 
 vero_het_1 <- ggplot(data=vero_loss, aes(x=N, y=heterospecific_response_env)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = FALSE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = FALSE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy)
@@ -83,15 +81,15 @@ annotate_figure(vero_figures,
                 
                 bottom = text_grob("Neighbor density ",
                                    size = 12),
-                left = text_grob("Per capita loss",  rot = 90, size = 12))
+                left = text_grob("Per capita seed loss",  rot = 90, size = 12))
 
 
 dev.off()
 
 
 trcy_cons_0 <- ggplot(data=trcy_loss, aes(x=N, y=conspecific_response)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = FALSE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = FALSE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy)+
@@ -99,24 +97,24 @@ trcy_cons_0 <- ggplot(data=trcy_loss, aes(x=N, y=conspecific_response)) +
 
 
 trcy_het_0 <- ggplot(data=trcy_loss, aes(x=N, y=heterospecific_response)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = TRUE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = TRUE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy) +
   ggtitle("Heterospecifics")
 
 trcy_cons_1 <- ggplot(data=trcy_loss, aes(x=N, y=conspecific_response_env)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = FALSE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = FALSE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy)
 
 
 trcy_het_1 <- ggplot(data=trcy_loss, aes(x=N, y=heterospecific_response_env)) + 
-  geom_line(aes(linetype = model, color= model), size=.7, show.legend = FALSE)+
-  scale_linetype_manual(values=c("solid","dashed","twodash", "dotted"))+
+  geom_line(aes(linetype = model, color= model), size=1, show.legend = FALSE)+
+  scale_linetype_manual(values=c("solid","dashed"))+
   scale_color_manual(values=palette_alba) +
   theme_alba +
   ylim(0,yy)

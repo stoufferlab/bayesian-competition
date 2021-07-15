@@ -47,7 +47,7 @@ model_fits <-
           warmup = 2000,
           cores   = 4,
           chains  = 4,
-          inits = 1,
+          inits = 0,
          control = list(adapt_delta = .99, max_treedepth=15)
         )
         

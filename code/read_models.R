@@ -25,8 +25,8 @@ vero_lv_multispecies_poisson.rds$constraints<- c(-Inf,1)
 vero_rc_multispecies_poisson.rds$name<- "Ricker"
 vero_rc_multispecies_poisson.rds$constraints<- c(-Inf, Inf)
 
-vero_hs_multispecies_poisson.rds$name<- "Hassell"
-vero_hs_multispecies_poisson.rds$constraints<- c(-1, Inf)
+#vero_hs_multispecies_poisson.rds$name<- "Hassell"
+#vero_hs_multispecies_poisson.rds$constraints<- c(-1, Inf)
 
 trcy_bh_multispecies_poisson.rds$name<-"Beverton-Holt"
 trcy_bh_multispecies_poisson.rds$constraints<-c(-1, Inf)
@@ -38,8 +38,8 @@ trcy_lv_multispecies_poisson.rds$constraints<- c(-Inf,1)
 trcy_rc_multispecies_poisson.rds$name<- "Ricker"
 trcy_rc_multispecies_poisson.rds$constraints<- c(-Inf, Inf)
 
-trcy_hs_multispecies_poisson.rds$name<- "Hassell"
-trcy_hs_multispecies_poisson.rds$constraints<-c(-1, Inf)
+#trcy_hs_multispecies_poisson.rds$name<- "Hassell"
+#trcy_hs_multispecies_poisson.rds$constraints<-c(-1, Inf)
 
 
 

@@ -1,5 +1,5 @@
 require("sp")
-#require("SpatialGraph")
+require("SpatialGraph")
 require("tidyverse")
 require("polylabelr")
 
@@ -412,7 +412,7 @@ structural_stability_wrapper <- function(R,
                                     rconstraints = rconstraints,
                                     Nupper = Nupper,
                                     desired_feasible = 2000,
-                                    max_samples = 5e5
+                                    max_samples = 2e5
   )
  
   

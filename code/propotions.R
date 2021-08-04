@@ -31,3 +31,5 @@ proportions_model <- function(mod){
 
 
 proportions_model(sunny_results)
+
+proportions_model(woody_results)

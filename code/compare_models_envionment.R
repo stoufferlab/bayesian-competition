@@ -38,23 +38,19 @@ model_compare_environment<- function(..., env){
 
 
 vero_sunny <- model_compare_environment(vero_bh_multispecies_poisson.rds,
-                       vero_lv_multispecies_poisson.rds,
                        vero_rc_multispecies_poisson.rds,
                        env=0) 
 
 
 vero_woody <- model_compare_environment(vero_bh_multispecies_poisson.rds,
-                                        vero_lv_multispecies_poisson.rds,
                                         vero_rc_multispecies_poisson.rds,
                                         env=1)
 
 trcy_sunny <- model_compare_environment(trcy_bh_multispecies_poisson.rds,
-                                        trcy_lv_multispecies_poisson.rds,
                                         trcy_rc_multispecies_poisson.rds,
                                         env = 0)
 
 trcy_woody <- model_compare_environment(trcy_bh_multispecies_poisson.rds,
-                                        trcy_lv_multispecies_poisson.rds,
                                         trcy_rc_multispecies_poisson.rds,
                                         env = 1)
 

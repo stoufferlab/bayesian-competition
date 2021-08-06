@@ -19,15 +19,15 @@ sj<- 0.9693324
 
 ptm <- proc.time()
 
- test_2<- posterior_feasibility(vero_model = vero_lv_multispecies_poisson.rds,
-                              trcy_model = trcy_lv_multispecies_poisson.rds,
+ test_2<- posterior_feasibility(vero_model = vero_bh_multispecies_poisson.rds,
+                              trcy_model = trcy_bh_multispecies_poisson.rds,
                               si = si,
                               gi = gi,
                               sj = sj,
                               gj = gj,
                               Ni_max  = 1e3,
                               Nj_max = 1e3,
-                              env = TRUE,
+                              env = FALSE,
                               bounded = TRUE)
 
 

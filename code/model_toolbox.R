@@ -306,6 +306,31 @@ posterior_feasibility <- function(vero_model,
                                                Nupper = Nupper,
                                                r= r_mean)
   
+  mean_abundances <- calculate_abundances(r = r_mean, 
+                                          inv_alpha = inverse_matrix(alpha_mean))
+  
+  vero_mean_abundance <- mean_abundances[1]
+  trcy_mean_abundance <- mean_abundances[2]
+  
+  
+  if( vero_mean_abundance > 0 & trcy_mean_abundance >0){
+    outcome <- "both"
+  }
+  
+  if( vero_mean_abundance < 0 & trcy_mean_abundance >0){
+    outcome <- "trcy"
+  }
+  
+  if( vero_mean_abundance > 0 & trcy_mean_abundance < 0){
+    outcome <- "vero"
+  }
+  
+  if( vero_mean_abundance < 0 & trcy_mean_abundance < 0){
+    outcome <- "none"
+  }
+  
+  
+  
  #we store the values of coexistence using the point estimates
  mean_parameters_results <- data.frame(
    "Omega_saavedraa_mean"= omega_SA_mean,
@@ -316,6 +341,7 @@ posterior_feasibility <- function(vero_model,
    "area_alone_mean"= mean_results$area_alone,
    "distance_mean"=  mean_results$distance,
    "feasibility_mean"= mean_results$feasibility,
+   "outcome_mean"= outcome,
    "R_mean"=R_mean,
    "convex_mean"= mean_results$convex,
    "detection_mean"= mean_results$detection)
@@ -405,7 +431,28 @@ posterior_feasibility <- function(vero_model,
         r = r_post
       )
       
-    
+      post_abundances <- calculate_abundances(r = r_post, 
+                                              inv_alpha = inverse_matrix(alpha))
+      
+      vero_post_abundance <- post_abundances[1]
+      trcy_post_abundance <- post_abundances[2]
+      
+      
+      if( vero_post_abundance > 0 & trcy_post_abundance >0){
+        outcome_post <- "both"
+      }
+      
+      if( vero_post_abundance < 0 & trcy_post_abundance >0){
+        outcome_post <- "trcy"
+      }
+      
+      if( vero_post_abundance > 0 & trcy_post_abundance < 0){
+        outcome_post <- "vero"
+      }
+      
+      if( vero_post_abundance < 0 & trcy_post_abundance < 0){
+        outcome_post <- "none"
+      }
       
       post_results <- data.frame(
         "Omega_saavedra"= omega_post_SA,
@@ -416,6 +463,7 @@ posterior_feasibility <- function(vero_model,
         "area_alone"= results$area_alone,
         "distance"= results$distance,
         "feasibility" = results$feasibility,
+        "outcome"= outcome_post,
         "Radius" = R_post,
         "convex"= results$convex,
         "detection"= results$detection,

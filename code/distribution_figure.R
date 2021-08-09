@@ -12,47 +12,88 @@ write_csv(sunny_results, file = "sunny.csv")
 write_csv(woody_results, file = "woody.csv")
 
 
-col1 <- rethinking::col.alpha("mediumseagreen",0.3)
-col2 <- rethinking::col.alpha("grey60",0.3)
-col3<- rethinking::col.alpha("#e3004e", 1)
+col1 <- rethinking::col.alpha("mediumseagreen",1)
+col2 <- rethinking::col.alpha("#0e77be",1)
+col3<- rethinking::col.alpha("#f0bb3f",1)
+
+
+
+col4 <- rethinking::col.alpha("mediumseagreen",.7)
+col5 <- rethinking::col.alpha("#0e77be",.7)
+col6<- rethinking::col.alpha("#f0bb3f",.7)
+
+
 
 xx <- expression("Relative coexistence ratio,"~rho)
 yy <- expression("Distance from the edge,"~delta)
 
 
-all_results<- rbind(sunny_results, woody_results) 
 
-all_results <- all_results %>% unite("combo", vero_model:trcy_model, remove = FALSE)
-
- open<-ggplot(sunny_results) +
+sun1<-ggplot(sunny_results) +
   geom_point(
     mapping = aes(
       x = proportion,
       y = distance,
-      col = as.factor(feasibility)
+      col = as.factor(outcome),
     ),
-    show.legend = FALSE,
-    size = 2
+    shape=19,
+    show.legend = TRUE,
+    size = 1
+  )+
+  scale_color_manual(
+    values = c(col4, col5, col6),
+    name = "Posterior prediction",
+    labels = c("Coexistence",
+               expression(italic("Trachymene c.")),
+               expression(italic(
+                 "Vellia r."
+               ))
+  ))+
+  facet_grid(trcy_model ~ vero_model)  +
+  geom_abline(
+    intercept = 0,
+    slope = 0,
+    linetype = "dashed",
+    col = "grey50"
   ) +
-  geom_point( mapping = aes(
-    x = proportion_mean,
-    y = distance_mean,
-    shape= as.factor(feasibility_mean)),
-    size=3,
-    col=col3,
-    show.legend = FALSE ) +
-  scale_color_manual(values = c(col2, col1)) +
-  facet_grid(trcy_model~vero_model)  +
-  geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")+
-  xlim(0,2.5)+
-  ylim(-20,10)+
-  theme_bw()+
-  theme(strip.background =element_rect(fill="white"),
-        axis.title = element_text(size = 12),
-        strip.text = element_text(size = 12))+
+  xlim(0, 2.5) +
+  ylim(-20, 10) +
+  theme_bw() +
+  theme(
+    strip.background = element_rect(fill = "white"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 15),
+    strip.text = element_text(size = 12),
+    legend.text.align = 0,
+    legend.position = "right",
+    legend.box = "vertical",
+    legend.margin = margin()
+  ) +
   xlab(xx)+
   ylab(yy)
 
+open<- sun1 +
+  geom_point(
+    mapping = aes(
+      x = proportion_mean,
+      y = distance_mean,
+      fill = as.factor(outcome_mean)
+    ),
+    col="black",
+    shape = 24,
+    stroke=0.5,
+    size = 3
+  ) +
+scale_fill_manual(
+    values = c(col1,col2,col3),
+    name = "Median prediction",
+    labels = c("Coexistence",
+               expression(italic("Trachymene c.")),
+               expression(italic(
+                 "Vellia r."
+               )))
+  ) 
  
 open <- annotate_figure(open,
                         top = text_grob( "Vellia rosea", size = 12, face = "italic"),
@@ -60,40 +101,83 @@ open <- annotate_figure(open,
                         )
  
  
- ggsave(open, filename = "../bayesian_competition_ms/sunny_results.pdf", width = 8, height = 8)
+ ggsave(open, filename = "../bayesian_competition_ms/sunny_results.pdf", width = 8, height = 6)
 
 
 # woody -------------------------------------------------------------------
 
  
- woody<-ggplot(woody_results) +
+ 
+ wod1<-ggplot(woody_results) +
    geom_point(
      mapping = aes(
        x = proportion,
        y = distance,
-       col = as.factor(feasibility)
+       col = as.factor(outcome),
      ),
-     show.legend = FALSE,
-     size = 2
+     shape=19,
+     show.legend = TRUE,
+     size = 1
+   )+
+   scale_color_manual(
+     values = c(col4, col5, col6),
+     name = "Posterior prediction",
+     labels = c("Coexistence",
+                expression(italic("Trachymene c.")),
+                expression(italic(
+                  "Vellia r."
+                ))
+     ))+
+   facet_grid(trcy_model ~ vero_model)  +
+   geom_abline(
+     intercept = 0,
+     slope = 0,
+     linetype = "dashed",
+     col = "grey50"
    ) +
-   geom_point( mapping = aes(
-     x = proportion_mean,
-     y = distance_mean,
-     shape= as.factor(feasibility_mean)),
-     size=3,
-     col=col3,
-     show.legend = FALSE ) +
-   scale_color_manual(values = c(col2, col1)) +
-   facet_grid(trcy_model~vero_model)  +
-   geom_abline(intercept = 0, slope = 0, linetype ="dashed", col="grey50")+
-   theme_bw()+
-   theme(strip.background =element_rect(fill="white"),
-         axis.title = element_text(size = 12),
-         strip.text = element_text(size = 12))+
+   xlim(0, 2.5) +
+   ylim(-20, 10) +
+   theme_bw() +
+   theme(
+     strip.background = element_rect(fill = "white"),
+     panel.grid.major = element_blank(),
+     panel.grid.minor = element_blank(),
+     axis.title = element_text(size = 15),
+     strip.text = element_text(size = 12),
+     legend.text.align = 0,
+     legend.position = "right",
+     legend.box = "vertical",
+     legend.margin = margin()
+   ) +
    xlab(xx)+
-   ylab(yy)+
-   ylim(-20,10)+
-   xlim(0,2.5)
+   ylab(yy)
+ 
+ 
+ 
+ woody<- wod1 +
+   geom_point(
+     mapping = aes(
+       x = proportion_mean,
+       y = distance_mean,
+       fill = as.factor(outcome_mean)
+     ),
+     col="black",
+     shape = 24,
+     stroke=0.5,
+     size = 3
+   ) +
+   scale_fill_manual(
+     values = c(col1,col3,col2),
+     name = "Median prediction",
+     labels = c("Coexistence",
+                expression(italic("Vellia r.")),
+                expression(italic(
+                  "Trachymene c."
+                )))
+   ) +
+   guides(color = guide_legend(order=1),
+          fill = guide_legend(order=2))
+ 
  
  
  woody <- annotate_figure(woody,
@@ -101,38 +185,7 @@ open <- annotate_figure(open,
                          right = text_grob( "Trachymene cyanopetala", size = 12, face = "italic", rot=-90)
  )
  
- ggsave(woody, filename = "../bayesian_competition_ms/woody_results.pdf", width = 8, height = 8)
+ ggsave(woody, filename = "../bayesian_competition_ms/woody_results.pdf", width = 8, height = 6)
  
 
- 
-
-# push --------------------------------------------------------------------
-
-all_results<- rbind(sunny_results, woody_results) 
- 
- all_results <- all_results %>% unite("combo", vero_model:trcy_model, remove = FALSE)
- 
- ggplot(all_results) +
-   geom_point(aes(x=combo,
-                  y=distance_mean,
-                  col=environment),
-              size=3)+
-   theme(axis.text.x=element_text(angle=90,hjust=1))
- 
- 
- ggplot(all_results) +
-   geom_point(aes(x=proportion_mean,
-                  y=distance_mean,
-                  col=as.factor(feasibility_mean),
-                  shape=as.factor(combo)),
-              size=4)+
-   facet_grid(~environment)+
-   scale_shape_manual(values = 0:9)+
-   theme_bw()
- 
- 
- 
- 
- 
- 
  

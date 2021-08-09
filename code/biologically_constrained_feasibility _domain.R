@@ -2,16 +2,16 @@ source("code/feasibility_toolbox.R")
 source("code/figure_label.R")
 source("code/determine_radius.R")
 
-pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 10, height = 5)
+pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 10, height = 3)
 
 
 #xlab=expression(italic(r[i]))
 #ylab=expression(italic(r[j]))
 
 make_figure_area <- function(alpha,
-                             N_max,
+                            N_max,
                              rconstraints,
-                             label){
+                            label){
   
 
   
@@ -65,11 +65,6 @@ make_figure_area <- function(alpha,
   #fig_label(text = label, region = "figure", pos  ="top", cex=1.5)
 }
 
-
-#par(  mar=c(11,4,11,0))
-# layout.matrix <- matrix(c(1,2,3,5,
-#                           1,2,4,6),
-#                           nrow = 2, ncol = 4, byrow = T)
 
 layout.matrix <- matrix(c(1,2,3,4),
                         nrow = 1, ncol = 4, byrow = T)
@@ -411,6 +406,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
 }
 
 
+
 rconstraints <- list(
   lower = c(-1, -1),
   upper = c(Inf, Inf))
@@ -421,5 +417,10 @@ make_figure_area(alpha = alpha,
                  label = "D) BCFD")
 
 
+
+mtext(expression("Growth rate"~italic(r[i])), side = 1, outer = TRUE, line = -1,cex = 1.3)
+
+
+mtext(expression("Growth rate"~italic(r[j])), side = 2, outer = TRUE, line = -2.5, cex = 1.3)
 
 dev.off()

@@ -414,7 +414,7 @@ rconstraints <- list(
 make_figure_area(alpha = alpha,
                  N_max = 1.5,
                  rconstraints = rconstraints,
-                 label = "D) BCFD")
+                 label = expression("D)"~beta))
 
 
 

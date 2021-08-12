@@ -4,7 +4,9 @@ source("code/determine_radius.R")
 
 pdf(file="../bayesian_competition_ms/feasibility_domain.pdf",width = 10, height = 5)
 
-expression(italic(r[i]))
+
+#xlab=expression(italic(r[i]))
+#ylab=expression(italic(r[j]))
 
 make_figure_area <- function(alpha,
                              N_max,
@@ -42,8 +44,8 @@ make_figure_area <- function(alpha,
                                     alpha = alpha,
                                     rconstraints = rconstraints,
                                     Nupper = Nupper,
-                                    desired_feasible = 30000,
-                                    max_samples = 8e5)
+                                    desired_feasible = 40000,
+                                    max_samples = 9e5)
   
   #And also the coordinates of all the points that are feasible
   shape_mean <- integration_mean$coords
@@ -64,10 +66,13 @@ make_figure_area <- function(alpha,
 }
 
 
-par(  mar=c(11,4,11,0))
-layout.matrix <- matrix(c(1,2,3,5,
-                          1,2,4,6),
-                          nrow = 2, ncol = 4, byrow = T)
+#par(  mar=c(11,4,11,0))
+# layout.matrix <- matrix(c(1,2,3,5,
+#                           1,2,4,6),
+#                           nrow = 2, ncol = 4, byrow = T)
+
+layout.matrix <- matrix(c(1,2,3,4),
+                        nrow = 1, ncol = 4, byrow = T)
 layout(mat = layout.matrix, heights=c(1,1,1), widths = c(1,1))
 
 # feasibility domain ------------------------------------------------------
@@ -145,20 +150,11 @@ make_figure_area <- function(alpha,
   
   col1 <- rethinking::col.alpha("mediumseagreen", alpha=1)
   col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
-  points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
+  #points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
   
   
   #fig_label(text = label, region = "figure", pos  ="top", cex=1.5)
 }
-
-
-
-
-
-
-
-
-
 rconstraints <- list(
   lower = c(-Inf, -Inf),
   upper = c(Inf, Inf))
@@ -171,9 +167,11 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_radius_boundaries(r = r,
                               R_max = R_max)){
   
+    
+    if(r[1]>0 && r[2]>0){
       points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=1))
-    
-    
+    } 
+     #points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=1))
     
     return(NA)
   }
@@ -183,7 +181,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_r_boundaries(r = r,
                          rconstraints = rconstraints)){
     #  print("out of growth boundaries")
-    #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
+     # points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
     return(NA)
   }
   
@@ -194,8 +192,12 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_N_boundaries(N = N,
                          Nupper = Nupper)){
     # print("out of abundance boundaries")
-    
+    if(r[1]>0 && r[2]>0){
       points(r[1],r[2], pch=20, col = rethinking::col.alpha("#c60044",alpha=1))
+    } 
+    #p
+    
+    
     return(NA)
   }
   
@@ -210,11 +212,11 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
 make_figure_area(alpha = alpha,
                  N_max = 1.5,
                  rconstraints = rconstraints,
-                 label = "B")
+                 label = "B) Abundance constraints")
 
 # model -------------------------------------------------------------------
 
-par(  mar=c(4,4,2,1))
+#par(  mar=c(4,4,2,1))
 
 check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   #returns NA if point is outside boundary
@@ -236,7 +238,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_r_boundaries(r = r,
                          rconstraints = rconstraints)){
     #  print("out of growth boundaries")
-    points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
+    #points(r[1],r[2], pch=20, col = rethinking::col.alpha("#1f00c6",alpha=0.1))
     return(NA)
   }
   
@@ -264,7 +266,7 @@ rconstraints <- list(
 make_figure_area(alpha = alpha,
                  N_max = 1.5,
                  rconstraints = rconstraints,
-                 label = "C")
+                 label = "C) Model-based constraints")
 
 
 rect(xleft = -4,
@@ -282,32 +284,88 @@ rect(xleft = -4,
      col = rethinking::col.alpha("#1f00c6", alpha = 1))
 
 
-
-rconstraints <- list(
-  lower = c(-1, -Inf),
-  upper = c(Inf, 1))
-make_figure_area(alpha = alpha,
-                 N_max = 1.5,
-                 rconstraints = rconstraints,
-                 label = "D")
-
-rect(xleft = -4,
-     xright = 4,
-     ytop = 4,
-     ybottom = 1,
-     border = NA,
-     col = rethinking::col.alpha("#1f00c6", alpha = 1))
-
-rect(xleft = -4,
-     xright = -1,
-     ytop = 4,
-     ybottom = -4,
-     border = NA,
-     col = rethinking::col.alpha("#1f00c6", alpha = 1))
+# 
+# rconstraints <- list(
+#   lower = c(-1, -Inf),
+#   upper = c(Inf, 1))
+# make_figure_area(alpha = alpha,
+#                  N_max = 1.5,
+#                  rconstraints = rconstraints,
+#                  label = "D")
+# 
+# rect(xleft = -4,
+#      xright = 4,
+#      ytop = 4,
+#      ybottom = 1,
+#      border = NA,
+#      col = rethinking::col.alpha("#1f00c6", alpha = 1))
+# 
+# rect(xleft = -4,
+#      xright = -1,
+#      ytop = 4,
+#      ybottom = -4,
+#      border = NA,
+#      col = rethinking::col.alpha("#1f00c6", alpha = 1))
 
 # both -------------------------------------------------------------------
 
 
+make_figure_area <- function(alpha,
+                             N_max,
+                             rconstraints,
+                             label){
+  
+  
+  
+  plot(0,0,
+       xlim=c(-3, 3),
+       ylim=c(-3, 3),
+       type='n',
+       xlab="",
+       ylab="",
+       cex.lab=1.5
+  )
+  title(main = label, adj=0, line = 0.5, font.main=1, cex.main = 1.5)
+  abline(h=0,lty='dashed',lwd=1.5)
+  abline(v=0,lty='dashed',lwd=1.5)
+  
+  
+  
+  Ni_max <- N_max
+  Nj_max <-N_max
+  
+  Nupper <- c(i = Ni_max,
+              j = Nj_max)
+  
+  R <- determine_radius(alpha = alpha,
+                        Ni_max = N_max,
+                        Nj_max = N_max)
+  
+  
+  integration_mean<- integrate_area(R_max = R,
+                                    alpha = alpha,
+                                    rconstraints = rconstraints,
+                                    Nupper = Nupper,
+                                    desired_feasible = 8000,
+                                    max_samples = 5e5)
+  
+  #And also the coordinates of all the points that are feasible
+  shape_mean <- integration_mean$coords
+  
+  # which tell us the bounds of the feasibility domain
+  shape_bounds_mean <- determine_boundary_shape(shape = shape_mean)
+  bounds_mean <- shape_bounds_mean$bounds
+  # and also the area the area of the feasibility domain
+  area_mean <- shape_bounds_mean$area
+  
+  
+  col1 <- rethinking::col.alpha("mediumseagreen", alpha=1)
+  col2 <- rethinking::col.alpha("grey50", alpha = 0.1)
+  points(shape_mean$ri, shape_mean$rj, pch=20, col=col1)
+  
+  
+  #fig_label(text = label, region = "figure", pos  ="top", cex=1.5)
+}
 
 
 check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
@@ -318,10 +376,11 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   if(!check_radius_boundaries(r = r,
                               R_max = R_max)){
     
-    #points(r[1],r[2], pch=20, col = rethinking::col.alpha("#510c61",alpha=1))
+    if(r[1]>0 && r[2]>0){
+    #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("darkmagenta",alpha=1))
+    } 
     
-    
-    
+  
     return(NA)
   }
   
@@ -329,8 +388,7 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   if(!check_r_boundaries(r = r,
                          rconstraints = rconstraints)){
-    #  print("out of growth boundaries")
-   #   points(r[1],r[2], pch=20, col = rethinking::col.alpha("#510c61",alpha=0.1))
+  #  points(r[1],r[2], pch=20, col = rethinking::col.alpha("darkmagenta",alpha=0.1))
     return(NA)
   }
   
@@ -340,9 +398,9 @@ check_point <- function(r,R_max,inv_alpha,rconstraints=NULL,Nupper=NULL){
   
   if(!check_N_boundaries(N = N,
                          Nupper = Nupper)){
-    # print("out of abundance boundaries")
-    
-   # points(r[1],r[2], pch=20, col = rethinking::col.alpha("#510c61",alpha=1))
+    if(r[1]>0 && r[2]>0){
+     # points(r[1],r[2], pch=20, col = rethinking::col.alpha("darkmagenta",alpha=1))
+    } 
     return(NA)
   }
   
@@ -360,16 +418,8 @@ rconstraints <- list(
 make_figure_area(alpha = alpha,
                  N_max = 1.5,
                  rconstraints = rconstraints,
-                 label = "E")
+                 label = "D) BCFD")
 
 
-rconstraints <- list(
-  lower = c(-1, -Inf),
-  upper = c(Inf, 1))
-
-make_figure_area(alpha = alpha,
-                 N_max = 1.5,
-                 rconstraints = rconstraints,
-                 label = "F")
 
 dev.off()

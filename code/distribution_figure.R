@@ -28,6 +28,12 @@ xx <- expression("Relative coexistence ratio,"~rho)
 yy <- expression("Distance from the edge,"~delta)
 
 
+new_order <- c("both", "trcy", "vero")
+
+
+sunny_results$outcome_mean <- factor(sunny_results$outcome_mean, levels = new_order)
+woody_results$outcome_mean <- factor(woody_results$outcome_mean, levels = new_order)
+
 
 sun1<-ggplot(sunny_results) +
   geom_point(
@@ -44,9 +50,9 @@ sun1<-ggplot(sunny_results) +
     values = c(col4, col5, col6),
     name = "Posterior prediction",
     labels = c("Coexistence",
-               expression(italic("Trachymene c.")),
+               expression(italic("T. cyanopetala")),
                expression(italic(
-                 "Vellia r."
+                 "V. rosea"
                ))
   ))+
   facet_grid(trcy_model ~ vero_model)  +
@@ -87,11 +93,12 @@ open<- sun1 +
   ) +
 scale_fill_manual(
     values = c(col1,col2,col3),
+    drop =FALSE,
     name = "Median prediction",
     labels = c("Coexistence",
-               expression(italic("Trachymene c.")),
+               expression(italic("T. cyanopetala")),
                expression(italic(
-                 "Vellia r."
+                 "V. rosea"
                )))
   ) 
  
@@ -123,9 +130,9 @@ open <- annotate_figure(open,
      values = c(col4, col5, col6),
      name = "Posterior prediction",
      labels = c("Coexistence",
-                expression(italic("Trachymene c.")),
+                expression(italic("T. cyanopetala")),
                 expression(italic(
-                  "Vellia r."
+                  "V. rosea"
                 ))
      ))+
    facet_grid(trcy_model ~ vero_model)  +
@@ -167,16 +174,15 @@ open <- annotate_figure(open,
      size = 3
    ) +
    scale_fill_manual(
-     values = c(col1,col3,col2),
+     drop = FALSE,
+     values = c(col1,col2,col3),
      name = "Median prediction",
      labels = c("Coexistence",
-                expression(italic("Vellia r.")),
+                expression(italic("T. cyanopetala")),
                 expression(italic(
-                  "Trachymene c."
+                  "V. rosea"
                 )))
-   ) +
-   guides(color = guide_legend(order=1),
-          fill = guide_legend(order=2))
+   ) 
  
  
  

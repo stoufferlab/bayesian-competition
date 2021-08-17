@@ -5,8 +5,8 @@ library(tidyverse)
 
 bh_bh_sensitiviyt <- read.csv("bh_bh_sensitiviyt.csv")
 
-xx <- expression("A) Relative coexistence ratio,"~rho)
-yy <- expression("B) Distance from the edge,"~delta)
+xx <- expression("C) Relative coexistence ratio,"~rho)
+yy <- expression("D) Distance from the edge,"~delta)
 
 parameters <- c( expression(alpha[ii]),
                  expression(alpha[ij]),
@@ -121,7 +121,7 @@ area_together <-  ggplot(bh_bh_sensitiviyt)+
     panel.grid.minor = element_blank(),
     strip.text = element_text(size = 12),
     axis.text.x = element_text(size = 15),
-    plot.title = element_text(size=15),
+    plot.title = element_text(size=12),
     axis.title = element_blank(),
     legend.text.align = 0,
     legend.position = "right",
@@ -139,8 +139,7 @@ area_together <-  ggplot(bh_bh_sensitiviyt)+
 
 
 area_alone <- ggplot(bh_bh_sensitiviyt)+
-  geom_boxplot(aes(x=parameter,
-                   y=area_alone),
+  geom_boxplot(aes(x= parameter,y=area_alone),
                outlier.alpha = 0.5,
                outlier.size = 0.5)+
   geom_abline(data = area_alone_mean,
@@ -153,9 +152,9 @@ area_alone <- ggplot(bh_bh_sensitiviyt)+
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.title = element_blank(),
-    plot.title = element_text(size=15),
+    plot.title = element_text(size=12),
     strip.text = element_text(size = 12),
-    axis.text.x = element_text(size = 15),
+    axis.text.x = element_text(size = 12),
     legend.text.align = 0,
     legend.position = "right",
     legend.box = "vertical",
@@ -185,9 +184,9 @@ rho <- ggplot(bh_bh_sensitiviyt)+
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.title = element_blank(),
-    plot.title = element_text(size = 15),
+    plot.title = element_text(size = 12),
     strip.text = element_text(size = 12),
-    axis.text.x = element_text(size = 15),
+    axis.text.x = element_text(size = 12),
     legend.text.align = 0,
     legend.position = "right",
     legend.box = "vertical",
@@ -218,9 +217,9 @@ delta <-
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.title = element_blank(),
-    plot.title = element_text(size=15),
+    plot.title = element_text(size=12),
     strip.text = element_text(size = 12),
-    axis.text.x = element_text(size = 15),
+    axis.text.x = element_text(size = 12),
     legend.text.align = 0,
     legend.position = "right",
     legend.box = "vertical",
@@ -258,11 +257,29 @@ areas <- ggarrange(
 areas<- annotate_figure(areas,
                             bottom = text_grob( "Parameter", size = 15),
                             left  = text_grob( "Value", size = 15,rot=90)
+                        
 )
 
 
 
-ggsave(rho_delta, filename = "../bayesian_competition_ms/params_results.pdf", width = 7, height = 6)
+together <- ggarrange(
+  area_together, area_alone,
+  rho, delta,
+  align ="hv",
+  ncol = 1,
+  nrow = 4)
+
+
+
+together <-  annotate_figure(together,
+                             bottom = text_grob( "Parameter", size = 15),
+                             left  = text_grob( "Value", size = 15,rot=90),
+                           
+                             
+)
+
+
+ggsave(together, filename = "../bayesian_competition_ms/params_results.pdf", width = 6, height = 10)
 
 ggsave(areas, filename = "../bayesian_competition_ms/areas_results.pdf", width = 7, height = 6)
 

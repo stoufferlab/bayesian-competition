@@ -4,11 +4,9 @@
 # focal is the identifier name of the species, either vero or trcy
 # data is the data of the focal, should read from "code/clean_data"
 # distribution is the likelihood used to fit the model
-# formulast is a list of brms formulas for all the models to fit, with each element having a distinct name
+# formulas is a list of brms formulas for all the models to fit, with each element having a distinct name
 # priors is a list with brms priors for each model parameter,
-# priors exp should have an extra parameter for the b parameter in hassell model
 # num species is to indicate if you are fitting species pairs or a multispecies system
-
 
 model_fits <-
   function(focal = "species_name",
@@ -16,28 +14,27 @@ model_fits <-
            distribution = poisson(link = "identity"),
            formulas,
            priors,
-           priors_exponent,
            num_species = "pairs",
            last_name = "poisson") {
     
     for (i in 1:length(formulas)) {
-      if (names(formulas)[[i]] == "hs" | names(formulas)[[i]] == "st") {
-        model <- brm(
-          formula = formulas[[i]],
-          prior = priors_exponent,
-          data =  data,
-          family = distribution,
-          iter = 16000,
-          warmup = 8000,
-          cores   = 4,
-          chains  = 2,
-          inits   = 1
-        )
+      # if (names(formulas)[[i]] == "hs" | names(formulas)[[i]] == "st") {
+      #   model <- brm(
+      #     formula = formulas[[i]],
+      #     prior = priors_exponent,
+      #     data =  data,
+      #     family = distribution,
+      #     iter = 16000,
+      #     warmup = 8000,
+      #     cores   = 4,
+      #     chains  = 2,
+      #     inits   = 1
+      #   )
         
-        id <- paste0("model_objects/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
-        saveRDS(model, file = id)
+      #   id <- paste0("model_objects/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
+      #   saveRDS(model, file = id)
         
-      } else{
+      # } else{
         model <- brm(
           formula = formulas[[i]],
           prior = priors,
@@ -47,14 +44,14 @@ model_fits <-
           warmup = 2000,
           cores   = 4,
           chains  = 4,
-          inits = 0,
-         control = list(adapt_delta = .99, max_treedepth=15)
+          init = 0,
+          control = list(adapt_delta = .99, max_treedepth=15)
         )
         
-        id <- paste0("model_objects_new/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
-        saveRDS(model, file = id)
+        id <- paste0("code/models/model_objects/",focal, "_", names(formulas)[[i]], "_", num_species, "_", last_name,".rds")
+        saveRDS(model, file = here(id))
         
-      }
+      # }
       
       
     }

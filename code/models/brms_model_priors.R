@@ -1,7 +1,14 @@
 
-#set prior distributions for brms models
-library(brms)
+# set prior distributions for brms models
 
+require(brms)
+
+# for a model without interactions
+prior_null= c(
+  prior(normal(0, 1), nlpar = "lambda")
+)
+
+# for a model with three interacting partners
 prior_multi= c(
   prior(normal(0, 1), nlpar = "lambda"),
   prior(normal(0, 0.1), nlpar = "alphaii"),

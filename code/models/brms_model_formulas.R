@@ -1,5 +1,13 @@
 
-# nonlinear model structures for various phenomenological models of density-dependent fecundity
+# brms nonlinear model structures for various phenomenological models of density-dependent fecundity
+
+require(brms)
+
+# INTERACTION-FREE MODEL
+interaction_free<-bf(
+  totalseeds~ ( exp(lambda) ) ,
+  lambda  ~ 1 + env,
+  nl=T)
 
 # BEVERTON-HOLT MODEL
 beverton_holt_multi<-bf(

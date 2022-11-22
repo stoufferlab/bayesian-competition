@@ -31,7 +31,7 @@ for(focal in c("vero", "trcy")){
       formula = formulas[[i]],
       prior = prior,
       data =  data,
-      family = poisson(link = "identity"),
+      family = negbinomial(link = "identity"),
       iter = 4000,
       warmup = 2000,
       cores   = 4,

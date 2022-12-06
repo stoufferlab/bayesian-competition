@@ -12,8 +12,8 @@ source(here("code/fit_models/brms_model_inits.R"))
 
 # we will only fit models listed below
 models <- c(
-  "ricker",
   "beverton_holt",
+  "ricker",
   "interaction_free"
 )
 
@@ -34,13 +34,13 @@ foreach(model_name = models) %:%
     brmsmodel <- brm(
       formula = model_formula(model_name),
       prior = model_prior(model_name),
-      data =  data,
       family = negbinomial(link = "identity"),
+      data =  data,
       # silent=2,
       # refresh=0,
       init = model_init(model_name, data, chains=4),
-      iter = 4000,
-      warmup = 2000,
+      iter = 22000,
+      warmup = 20000,
       cores   = 4,
       chains  = 4,
       control = list(adapt_delta=0.999, max_treedepth=25)

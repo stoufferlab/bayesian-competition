@@ -151,3 +151,54 @@ outcome_table <- table(
 
 # order the table
 outcome_table <- outcome_table[c("i_too_big","i","BOTH",'j','j_too_big'),]
+
+# normalize each column
+outcome_table <- sweep(
+    outcome_table,
+    2,
+    colSums(outcome_table),
+    "/"
+)
+
+# lets make a lovely figure of all this too while we're at it
+layout.matrix <- matrix(
+    c(1,2,3,4),
+    nrow = 2,
+    ncol = 2,
+    byrow = T
+)
+layout(mat = layout.matrix, heights=c(1,1), widths = c(2,2))
+
+par(oma = c(2, 7, 7, 10))
+
+par(mar = c(2, 3, 2, 1.5))
+
+library(viridis)
+for(tmodel in c("Beverton-Holt","Ricker")){
+    for(vmodel in c("Beverton-Holt","Ricker")){
+        barplot(
+            outcome_table[,c(paste0(vmodel,"_",tmodel,"_1"),paste0(vmodel,"_",tmodel,"_0"))],
+            horiz=TRUE,
+            col=viridis(5),
+            names.arg = c("Woody","Open"),
+            cex.names=1.5,
+            cex.axis=1.5
+        )
+        if(vmodel=="Beverton-Holt")
+            mtext(tmodel,side=2,cex=2,line=3.5)
+        if(tmodel=="Beverton-Holt")
+            mtext(vmodel,side=3,cex=2)
+    }
+}
+legend(
+    "topright",
+    fill=viridis(5),
+    c("G wins","G wins","Coexistence","T wins","T wins"),
+    pt.bg=viridis(5),
+    xpd=NA,
+    inset=c(-0.35,-0.22),
+    bty='n',
+    cex=1.5
+)
+mtext(expression(italic("Trachymene cyanopetala")),side=2,outer=TRUE,cex=2.5,line=4)
+mtext(expression(italic("Goodenia rosea")),side=3,outer=TRUE,cex=2.5,line=1.5)

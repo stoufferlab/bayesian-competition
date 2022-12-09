@@ -112,9 +112,7 @@ structural_stability_wrapper_figure <- function(
   
 }
 
-
-setEPS()
-postscript(file=here("figures/rho_delta.ps"),width = 8, height = 6)
+pdf(file=here("figures/rho_delta.pdf"),width = 8, height = 6)
 layout.matrix <- matrix(c(1,2,3,
                           4,4,4),
                         nrow = 2, ncol = 3, byrow = T)

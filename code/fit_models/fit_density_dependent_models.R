@@ -39,8 +39,8 @@ foreach(model_name = models) %:%
       # silent=2,
       # refresh=0,
       init = model_init(model_name, data, chains=4),
-      iter = 22000,
-      warmup = 20000,
+      iter = 51000,
+      warmup = 50000,
       cores   = 4,
       chains  = 4,
       control = list(adapt_delta=0.999, max_treedepth=25)

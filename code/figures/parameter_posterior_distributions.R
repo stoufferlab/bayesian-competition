@@ -42,8 +42,10 @@ posterior_distributions <- function(model, xlim1=NULL, xlim2=NULL){
                              "         Other (open)",
                              "        Other (woody)")
   
-  competition_plot<-  mcmc_intervals(competition,
-               prob = 0.8) +
+  competition_plot <- mcmc_intervals(
+      competition,
+      prob = 0.5
+    ) +
     theme_bw() +
     theme(
       strip.background = element_rect(fill = "white"),
@@ -71,7 +73,7 @@ posterior_distributions <- function(model, xlim1=NULL, xlim2=NULL){
 
   seed_plot <- mcmc_intervals(
       seeds,
-      prob = 0.8
+      prob = 0.5
     ) +
     theme_bw() +
     theme(
@@ -150,8 +152,7 @@ vero_dist <- annotate_figure(
   fig.lab.pos = "top.right"
 )
 
-setEPS()
-postscript(file = here("figures/goro_dist.eps"), height = 8, width = 14)
+pdf(file = here("figures/goro_dist.pdf"), height = 8, width = 14)
 vero_dist
 dev.off()
 
@@ -200,7 +201,6 @@ trcy_dist <- annotate_figure(
   fig.lab.pos = "top.right"
 )
 
-setEPS()
-postscript(file = here("figures/trcy_dist.eps"), height = 8, width = 14)
+pdf(file = here("figures/trcy_dist.pdf"), height = 8, width = 14)
 trcy_dist
 dev.off()

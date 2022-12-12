@@ -16,7 +16,7 @@ source(here("data/germination/extra_params.R"))
 
 # tuning parameters that mostly control speed of these calculations
 set.seed(22380)
-subsample <- 1000
+subsample <- NULL
 desired_feasible <- 5000
 max_samples <- 50000
 
@@ -50,15 +50,21 @@ feasibility_posteriors <- foreach(vero_model_name = vero_models_to_mix, .combine
     if(nrow(posteriors[["vero"]]) != nrow(posteriors[["trcy"]]))
         stop('these posteriors cannot be matched')
 
+    # add in a column to quickly identify the median values
+    posteriors[["vero"]]$median <- FALSE
+    posteriors[["trcy"]]$median <- FALSE
+
     # attach medians to front of posteriors
     posteriors[["vero"]] <- rbind(
         apply(posteriors[["vero"]], 2, median),
         posteriors[["vero"]]
     )
+    posteriors[["vero"]]$median[1] <- TRUE
     posteriors[["trcy"]] <- rbind(
         apply(posteriors[["trcy"]], 2, median),
         posteriors[["trcy"]]
     )
+    posteriors[["trcy"]]$median[1] <- TRUE
 
     # when !is.null(subsample) use a subsample of non-median values
     if(!is.null(subsample)){
@@ -143,62 +149,9 @@ for(i in seq.int(nrow(feasibility_posteriors))){
     }
 }
 
-# outcome table
-outcome_table <- table(
-    feasibility_posteriors$biological_outcome,
-    paste(feasibility_posteriors$vero_model, feasibility_posteriors$trcy_model, feasibility_posteriors$woody, sep="_")
+# write this to a file so that we don't have to wait to regenerate it every bloody time!
+write.csv(
+    feasibility_posteriors,
+    file=here('data/results/combined_feasibility_posteriors.csv'),
+    quote=FALSE
 )
-
-# order the table
-outcome_table <- outcome_table[c("i_too_big","i","BOTH",'j','j_too_big'),]
-
-# normalize each column
-outcome_table <- sweep(
-    outcome_table,
-    2,
-    colSums(outcome_table),
-    "/"
-)
-
-# lets make a lovely figure of all this too while we're at it
-layout.matrix <- matrix(
-    c(1,2,3,4),
-    nrow = 2,
-    ncol = 2,
-    byrow = T
-)
-layout(mat = layout.matrix, heights=c(1,1), widths = c(2,2))
-
-par(oma = c(2, 7, 7, 10))
-
-par(mar = c(2, 3, 2, 1.5))
-
-library(viridis)
-for(tmodel in c("Beverton-Holt","Ricker")){
-    for(vmodel in c("Beverton-Holt","Ricker")){
-        barplot(
-            outcome_table[,c(paste0(vmodel,"_",tmodel,"_1"),paste0(vmodel,"_",tmodel,"_0"))],
-            horiz=TRUE,
-            col=viridis(5),
-            names.arg = c("Woody","Open"),
-            cex.names=1.5,
-            cex.axis=1.5
-        )
-        if(vmodel=="Beverton-Holt")
-            mtext(tmodel,side=2,cex=2,line=3.5)
-        if(tmodel=="Beverton-Holt")
-            mtext(vmodel,side=3,cex=2)
-    }
-}
-legend(
-    "topright",
-    fill=viridis(5),
-    c("G wins","G wins","Coexistence","T wins","T wins"),
-    pt.bg=viridis(5),
-    xpd=NA,
-    inset=c(-0.35,-0.22),
-    bty='n',
-    cex=1.5
-)
-mtext(expression(italic("Trachymene cyanopetala")),side=2,outer=TRUE,cex=2.5,line=4)
-mtext(expression(italic("Goodenia rosea")),side=3,outer=TRUE,cex=2.5,line=1.5)

@@ -122,7 +122,8 @@ feasibility_posteriors <- foreach(vero_model_name = vero_models_to_mix, .combine
                         rj=r[2],
                         R_max=R_max,
                         giNi_max=gN_max[1],
-                        gjNj_max=gN_max[2]
+                        gjNj_max=gN_max[2],
+                        median=ifelse(i==1,TRUE,FALSE)
                     ),
                     results
                 )
@@ -153,5 +154,6 @@ for(i in seq.int(nrow(feasibility_posteriors))){
 write.csv(
     feasibility_posteriors,
     file=here('data/results/combined_feasibility_posteriors.csv'),
-    quote=FALSE
+    quote=FALSE,
+    row.names=FALSE
 )

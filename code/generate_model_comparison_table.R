@@ -45,7 +45,7 @@ vero <- vero_open %>%
     rownames_to_column(vero_all, var="Model"),
     by="Model"
   )
-vero$Species <- "Goodenia_rosea"
+vero$Species <- "G._rosea"
 
 # trcy
 
@@ -86,11 +86,46 @@ trcy <- trcy_open %>%
     rownames_to_column(trcy_all, var="Model"),
     by="Model"
   )
-trcy$Species <- "Trachymene_cyanopetala"
+trcy$Species <- "T._cyanopetala"
 
-# both focal species together
+# put both focal species together
 
 values <- rbind(vero,trcy)
 
-# DEBUG: write this to a file?
-xtable(values)
+# tidy some things for the presentation of the tabled data
+values <- values %>%
+  relocate(Species) %>%
+  select(!starts_with("waic")) %>%
+  mutate(across(starts_with("loo"), round, digits=2))
+
+# name fixing
+values$Species <- gsub('_',' ',values$Species)
+values$Species <- gsub("^",'\\\\emph{',values$Species)
+# values$Species <- gsub("^ ",' \\',values$Species,fixed=TRUE)
+values$Species <- gsub("$",'}',values$Species)
+values$Model <- gsub('-','--',values$Model)
+colnames(values) <- gsub('_',' ',colnames(values))
+colnames(values)[grepl("looic",colnames(values))] <- "LOOIC"
+colnames(values)[grepl("weight",colnames(values))] <- "Weight"
+
+colnames(values)[1] <- '\\multirow{2}{*}{Species}'
+colnames(values)[2] <- '\\multirow{2}{*}{Model}'
+
+values <- rbind(
+  c('','',rep(c('LOOIC','Weight'),3)),
+  values
+)
+
+print(values)
+
+
+
+# DEBUG: write this to a file for inclusion in the manuscript
+library(Hmisc)
+latex(
+  values,
+  file=here("tables/looic_comparison.tex"),
+  label="tab:compare",
+  rowname=NULL,
+  caption='Model comparison in the \\emph{open} and \\emph{woody} environments. LOOIC (leave-one-out cross-validation information criteria) penalizes models for the number of parameters, and the lowest value reflects the best-performing model. The weight for each model is an estimate of the probability that the model will make the best predictions of new data based on the the set of models considered.'
+)

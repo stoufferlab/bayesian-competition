@@ -15,7 +15,7 @@ outcome_table <- table(
 outcome_table <- outcome_table[c("i_too_big","i","BOTH",'j','j_too_big'),]
 
 # normalize each column
-outcome_table <- sweep(
+outcome_probs <- sweep(
     outcome_table,
     2,
     colSums(outcome_table),
@@ -37,15 +37,15 @@ layout.matrix <- matrix(
 )
 layout(mat = layout.matrix, heights=c(1,1), widths = c(2,2))
 
-par(oma = c(2, 7, 7, 10))
+par(oma = c(2, 14, 4, 3))
 
 par(mar = c(2, 3, 2, 5))
 
 for(tmodel in c("Beverton-Holt","Ricker")){
     for(vmodel in c("Beverton-Holt","Ricker")){
-        small_outcome_table <- outcome_table[,c(paste0(vmodel,"_",tmodel,"_1"),paste0(vmodel,"_",tmodel,"_0"))]
+        small_outcome_probs <- outcome_probs[,c(paste0(vmodel,"_",tmodel,"_1"),paste0(vmodel,"_",tmodel,"_0"))]
         barplot(
-            small_outcome_table,
+            small_outcome_probs,
             horiz=TRUE,
             col=viridis(5),
             names.arg = c("Woody","Open"),
@@ -53,22 +53,25 @@ for(tmodel in c("Beverton-Holt","Ricker")){
             cex.axis=1.5
         )
         # model labels
-        if(vmodel=="Beverton-Holt")
-            mtext(tmodel,side=2,cex=2,line=3.5)
+        if(vmodel!="Beverton-Holt"){
+            text(1.08,1.3,tmodel,adj=c(0.5,0.5),cex=2.2,xpd=TRUE,srt=270)
+        }
         if(tmodel=="Beverton-Holt")
-            mtext(vmodel,side=3,cex=2)
+            text(0.5,2.55,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=TRUE)
+            # mtext(vmodel,side=3,cex=2)
         # add a symbol to indicate median prediction
         median_outcome_0 <- subset(feasibility_posteriors, median & vero_model == vmodel & trcy_model == tmodel & woody==0)$biological_outcome
         median_outcome_1 <- subset(feasibility_posteriors, median & vero_model == vmodel & trcy_model == tmodel & woody==1)$biological_outcome
         # stop()
-        midpoints_0 <- (2*cumsum(small_outcome_table[,2])-small_outcome_table[,2])/2
-        midpoints_1 <- (2*cumsum(small_outcome_table[,1])-small_outcome_table[,1])/2
+        midpoints_0 <- (2*cumsum(small_outcome_probs[,2])-small_outcome_probs[,2])/2
+        midpoints_1 <- (2*cumsum(small_outcome_probs[,1])-small_outcome_probs[,1])/2
         points(midpoints_0[median_outcome_0],1.9,bg='white',pch=21,cex=5)
         points(midpoints_1[median_outcome_1],0.7,bg='white',pch=21,cex=5)
     }
 }
 legend(
-    "topright",
+    x=-1.97,
+    y=3.3,
     fill=viridis(5),
     c(
         expression(italic("G. rosea")*"*"),
@@ -79,12 +82,31 @@ legend(
     ),
     pt.bg=viridis(5),
     xpd=NA,
-    inset=c(-0.55,-0.22),
+    # inset=c(-1.55,-0.5),
     # bty='n',
     cex=1.5,
     title="Predicted outcome"
 )
-mtext(expression(italic("Trachymene cyanopetala")),side=2,outer=TRUE,cex=2.5,line=4)
-mtext(expression(italic("Goodenia rosea")),side=3,outer=TRUE,cex=2.5,line=1.5)
+text(
+    -0.2,
+    5.6,
+    expression(italic("Goodenia rosea")),
+    xpd=NA,
+    # side=3,
+    # outer=TRUE,
+    cex=2.9,
+    # line=1.5
+)
+par(xpd=TRUE)
+text(
+    1.2,
+    2.7,
+    expression(italic("Trachymene cyanopetala")),
+    xpd=NA,
+    adj=c(0.5,0.5),
+    cex=2.9,
+    srt=270
+)
+
 
 dev.off()

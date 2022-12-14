@@ -65,7 +65,7 @@ for(model in c('ricker','beverton_holt')){
 for(woody in c(0)){
 
 filename <- paste0(
-    "figures/posterior_feasibility_domain_",
+    "figures/posterior_feasibility_domains_",
     ifelse(woody,"woody","open"),
     ".pdf"
 )

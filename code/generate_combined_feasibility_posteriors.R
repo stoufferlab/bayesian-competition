@@ -97,17 +97,11 @@ feasibility_posteriors <- foreach(vero_model_name = vero_models_to_mix, .combine
                     trcy_row = posteriors[["trcy"]][i, ],
                     woody = woody
                 )
-                R_max <- maximum_radius(
-                    alpha = alpha, 
-                    gN_max = gN_max
-                )
                 results <- structural_stability_wrapper(
                     r = r,
                     alpha = alpha,
-                    R_max = R_max,
                     gN_max = gN_max,
                     rconstraints = rconstraints,
-                    desired_feasible = desired_feasible,
                     max_samples = max_samples
                 )
                 results <- cbind(
@@ -120,7 +114,6 @@ feasibility_posteriors <- foreach(vero_model_name = vero_models_to_mix, .combine
                         alphajj=alpha[2,2],
                         ri=r[1],
                         rj=r[2],
-                        R_max=R_max,
                         giNi_max=gN_max[1],
                         gjNj_max=gN_max[2],
                         median=ifelse(i==1,TRUE,FALSE)

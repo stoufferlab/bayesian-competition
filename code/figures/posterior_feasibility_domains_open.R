@@ -158,11 +158,9 @@ for(tmodel in c('beverton_holt','ricker')){
                     )
                     results <- integrate_area(
                         alpha = alpha,
-                        R_max = R_max,
                         gN_max = gN_max,
                         rconstraints = rconstraints,
-                        desired_feasible = desired_feasible,
-                        max_samples = max_samples
+                        npts = max_samples
                     )$coords
                     # model_combo <- paste(vmodel,tmodel,woody,sep='_')
             

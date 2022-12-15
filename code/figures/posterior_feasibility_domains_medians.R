@@ -16,9 +16,7 @@ source(here("data/germination/extra_params.R"))
 
 # tuning parameters that mostly control speed of these calculations
 set.seed(123454)
-subsample <- 50
-desired_feasible <- 50000
-max_samples <- 500000
+max_samples <- 5E7
 
 # extract derived posteriors of pop dyn model parameter values
 # replace those posteriors with the medians
@@ -156,11 +154,9 @@ for(tmodel in c('beverton_holt','ricker')){
                     )
                     results <- integrate_area(
                         alpha = alpha,
-                        R_max = R_max,
                         gN_max = gN_max,
                         rconstraints = rconstraints,
-                        desired_feasible = desired_feasible,
-                        max_samples = max_samples
+                        npts = max_samples
                     )$coords
                     # model_combo <- paste(vmodel,tmodel,woody,sep='_')
             

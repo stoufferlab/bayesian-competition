@@ -95,13 +95,12 @@ maximum_radius <-function(alpha, gN_max){
   return(max(Rvalues))
 }
 
-
-#function to see if the vector of growth rates is inside a radius
-#returns TRUE or FALSE
-within_radius_boundaries <- function(r, R_max = 1){
-  radius <- sqrt(sum(r^2))
-  return(radius <= R_max)
-}
+# #function to see if the vector of growth rates is inside a radius
+# #returns TRUE or FALSE
+# within_radius_boundaries <- function(r, R_max = 1){
+#   radius <- sqrt(sum(r^2))
+#   return(radius <= R_max)
+# }
 
 #function to see if the vector of growth rates and inverse alpha matrix leads to feasible equilibrium
 #returns TRUE or FALSE
@@ -126,14 +125,14 @@ is_feasible <- function(r, inv_alpha){
 # NA if point is outside boundary
 # FALSE if it is inside boundary but infeasible
 # TRUE if it is inside boundary and feasible
-check_point <- function(r,inv_alpha,R_max,rconstraints=NULL,gN_max=NULL){
+check_point <- function(r,inv_alpha,rconstraints=NULL,gN_max=NULL){
   feasibility <- is_feasible(r = r, inv_alpha = inv_alpha)
   if(!feasibility)
     return(feasibility)
   else{
     faults <- NULL
-    if(!within_radius_boundaries(r = r, R_max = R_max))
-      faults <- c(faults, "RMAX")
+    # if(!within_radius_boundaries(r = r, R_max = R_max))
+    #   faults <- c(faults, "RMAX")
 
     if(!within_r_boundaries(r = r, rconstraints = rconstraints))
       faults <- c(faults, "MODEL")
@@ -149,73 +148,57 @@ check_point <- function(r,inv_alpha,R_max,rconstraints=NULL,gN_max=NULL){
   }
 }
 
-#Function to generate a random point within a circle of radius R_max
-generate_point <- function(R_max){
-  a <- runif(1) * 2 * pi
-  r = R_max * sqrt(runif(1))
-  return(c(r*cos(a), r*sin(a)))
-}
+# #Function to generate a random point within a circle of radius R_max
+# generate_point <- function(R_max){
+#   a <- runif(1) * 2 * pi
+#   r = R_max * sqrt(runif(1))
+#   return(c(r*cos(a), r*sin(a)))
+# }
 
 # Function that generates many random points and checks our constraints and feasibility by monte carlo sampling
 # desired feasible is the number of points we want in the feasibility region
 # max_samples is the max number of samples before it gives up
 integrate_area <- function(
     alpha,
-    R_max,
     rconstraints=NULL,
     gN_max=NULL,
-    desired_feasible=1e3,
-    max_samples=1e6
+    npts=1e6
 ){
+
   # returns:
-  # the coordinates of the points that are feasible and inside the constraints
-  # the coordinates of the points that are not
-  # the proportion of the points that are feasible and inside the constraints
-
-  inv_alpha <- inverse_matrix(alpha)
+  # coords, the coordinates of the points that are feasible and inside the constraints
+  # unfeasible, the coordinates of the points that are not
   
-  samples<- 0
-  total <- 0
-  coordinates_ri <- c()
-  coordinates_rj <- c()
-  coordinates_unfeasible_ri <- c()
-  coordinates_unfeasible_rj <- c()
-  
-  while(total < desired_feasible & samples < max_samples){
-    #generate a random point inside a radius defined by R_max
-    point <- generate_point(R_max = R_max)
-    #we check if it is within the boundaries, and if it is feasible
-    result <- check_point(
-      r = point,
-      inv_alpha = inv_alpha,
-      R_max = R_max,
-      rconstraints = rconstraints,
-      gN_max = gN_max
-    )
-    if(!is.logical(result)){
-      next
-    }
-    
-    #  if the point is inside the boundary and feasible, we save its coordinates
-    if(result){
-      coordinates_ri <-c(coordinates_ri, point[1])
-      coordinates_rj <-c(coordinates_rj, point[2])
-    }else{
-      coordinates_unfeasible_ri <- c(coordinates_unfeasible_ri, point[1])
-      coordinates_unfeasible_rj <- c(coordinates_unfeasible_rj, point[2])
-    }
-    
-    samples <- samples + 1
-    total <- total + result
+  if(is.null(gN_max)){
+    stop("The function 'integrate_area' is not set up to work without abundance constraints.")
   }
-  
-  ri_rj <- data.frame("ri"= coordinates_ri, "rj"= coordinates_rj)
-  unfeasible <- data.frame("ri"= coordinates_unfeasible_ri, "rj"= coordinates_unfeasible_rj)
-  proportion <- total/samples
-  
-  return(list("coords"= ri_rj, "unfeasible"=unfeasible, proportion = proportion))
-}
 
+  # sample feasible equilibria
+  N_feasible <- sapply(gN_max, function(x,npts) runif(npts,0,x), npts=npts)
+
+  # convert equilibria to growth rates
+  r_feasible <- N_feasible %*% t(alpha)
+
+  # add in 0,0 since it anchors all domains
+  r_feasible <- rbind(
+    c(0,0),
+    r_feasible
+  )
+
+  # some manipulation
+  r_feasible <- as.data.frame(r_feasible)
+  colnames(r_feasible) <- c("ri","rj")
+
+  # check whether or not each point is within the model-based constraints on r
+  r_to_keep <- apply(
+    r_feasible,
+    1,
+    within_r_boundaries,
+    rconstraints = rconstraints
+  )
+
+  return(list(coords=r_feasible[r_to_keep,], unfeasible=r_feasible[!r_to_keep,]))
+}
 
 # function to convert a set of points into their convex hull and the area thereof
 # takes
@@ -421,21 +404,17 @@ area_species_alone <- function(alpha,
 structural_stability_wrapper <- function(
   r,
   alpha,
-  R_max,
   gN_max,
   rconstraints,
-  desired_feasible = 2000,
   max_samples = 2E5
 ){
 
   #we do a mcmc integration of the feasible area
   integration<- integrate_area(
     alpha = alpha,
-    R_max = R_max,
     rconstraints = rconstraints,
     gN_max = gN_max,
-    desired_feasible = desired_feasible,
-    max_samples = max_samples
+    npts = max_samples
   )
 
   # use the feasible points to define the convex hull of the feasibility domain
@@ -463,7 +442,6 @@ structural_stability_wrapper <- function(
   # check if the inferred growth rates correspond to a biologically constrained feasible equilibrium
   biological_feasibility <- check_point(
     r = r,
-    R_max = R_max,
     inv_alpha = inverse_matrix(alpha),
     rconstraints = rconstraints,
     gN_max = gN_max

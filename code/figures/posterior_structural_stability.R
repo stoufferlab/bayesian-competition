@@ -1,14 +1,14 @@
 
 # used for the color scheme
 library(here)
-library(viridis)
+# library(viridis)
 
 testing <- FALSE
 
 feasibility_posteriors <- read.csv(here('data/results/combined_feasibility_posteriors.csv'))
 
-# remove undetected feasibility domains
-feasibility_posteriors <- subset(feasibility_posteriors, domain_detected)
+# # remove undetected feasibility domains
+# feasibility_posteriors <- subset(feasibility_posteriors, domain_detected)
 
 feasibility_posteriors$woody <- ifelse(
     feasibility_posteriors$woody,
@@ -95,8 +95,8 @@ for(tmodel in c("Beverton-Holt","Ricker")){
                 text(5.65,3,tmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA,srt=270)
                 text(
                     x=0,
-                    y=13,
-                    label='Size of the biologically constrained feasibility domain',
+                    y=14,
+                    label='Size of the biologically constrained feasibility domain (log)',
                     # side=2,
                     cex=2.5,
                     # line=3.5,
@@ -111,7 +111,7 @@ for(tmodel in c("Beverton-Holt","Ricker")){
             if(vmodel=="Beverton-Holt"){
                 text(1.5,15,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
             }else{
-                text(1.5,10.7,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
+                text(1.5,10.9,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
             }
             # mtext(vmodel,side=3,cex=2,line=1)
         }else{
@@ -149,7 +149,7 @@ for(tmodel in c("Beverton-Holt","Ricker")){
 # )
 text(
     -0,
-    22.5,
+    27.5,
     expression(italic("Goodenia rosea")),
     xpd=NA,
     # side=3,

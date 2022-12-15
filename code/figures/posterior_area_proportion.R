@@ -7,8 +7,8 @@ testing <- FALSE
 
 feasibility_posteriors <- read.csv(here('data/results/combined_feasibility_posteriors.csv'))
 
-# remove undetected feasibility domains
-feasibility_posteriors <- subset(feasibility_posteriors, domain_detected)
+# # remove undetected feasibility domains
+# feasibility_posteriors <- subset(feasibility_posteriors, domain_detected)
 
 feasibility_posteriors$woody <- ifelse(
     feasibility_posteriors$woody,

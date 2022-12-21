@@ -21,6 +21,7 @@ make_figure_area <- function(label){
   # title(main = label, adj=0, line = 0.5, font.main=1, cex.main = 1.5)
   abline(h=0,lty='dashed',lwd=1.5)
   abline(v=0,lty='dashed',lwd=1.5)
+  mtext(expression("Vital rate,"~italic(r[i])), side = 1, line = 3,cex = 1.1)
 }
 
 
@@ -158,7 +159,7 @@ polygon(
 #   col = scales::alpha("mediumseagreen", alpha = 1)
 # )
 
-mtext(expression("Vital rate,"~italic(r[i])), side = 1, outer = TRUE, line = -2,cex = 1.1)
+# mtext(expression("Vital rate,"~italic(r[i])), side = 1, outer = TRUE, line = -2,cex = 1.1)
 mtext(expression("Vital rate,"~italic(r[j])), side = 2, outer = TRUE, line = -2., cex = 1.1)
 
 dev.off()

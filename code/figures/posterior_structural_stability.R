@@ -96,7 +96,7 @@ for(tmodel in c("Beverton-Holt","Ricker")){
                 text(
                     x=0,
                     y=14,
-                    label='Size of the biologically constrained feasibility domain (log)',
+                    label=expression('Size of the biologically constrained feasibility domain, log('*italic(A[beta])*')'),
                     # side=2,
                     cex=2.5,
                     # line=3.5,

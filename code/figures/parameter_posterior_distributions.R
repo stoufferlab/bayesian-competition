@@ -51,13 +51,15 @@ posterior_distributions <- function(model, xlim1=NULL, xlim2=NULL){
       strip.background = element_rect(fill = "white"),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      axis.title = element_blank(),
+      # axis.title = element_blank(),
       strip.text = element_text(size = 12),
       legend.text.align = 0,
       legend.position = "right",
       legend.box = "vertical",
       legend.margin = margin()
-    )
+    ) +
+    xlab('Value') +
+    theme(axis.title.x = element_text(size=15))
 
   if(!is.null(xlim1)){
     competition_plot <- competition_plot + xlim(xlim1[1], xlim1[2])
@@ -147,7 +149,7 @@ vero_dist <- annotate_figure(
     face = "italic",
     size = 15
   ),
-  bottom = text_grob("Value", size = 15),
+  # bottom = text_grob("Value", size = 15),
   left = text_grob("Parameter", size = 15, rot = 90),
   fig.lab.pos = "top.right"
 )
@@ -196,7 +198,7 @@ trcy_dist <- annotate_figure(
     "Trachymene cyanopetala",
     face = "italic",
     size = 15),
-  bottom = text_grob("Value", size = 15),
+  # bottom = text_grob("Value", size = 15),
   left = text_grob("Parameter", size = 15, rot = 90),
   fig.lab.pos = "top.right"
 )

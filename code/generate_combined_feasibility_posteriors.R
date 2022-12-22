@@ -17,8 +17,7 @@ source(here("data/germination/extra_params.R"))
 # tuning parameters that mostly control speed of these calculations
 set.seed(22380)
 subsample <- NULL
-desired_feasible <- 5000
-max_samples <- 50000
+min_samples <- 50000
 
 # get combined feasibility metrics for all models except the null
 vero_models_to_mix <- setdiff(names(focal_models[["vero"]]), c("interaction_free"))
@@ -102,7 +101,7 @@ feasibility_posteriors <- foreach(vero_model_name = vero_models_to_mix, .combine
                     alpha = alpha,
                     gN_max = gN_max,
                     rconstraints = rconstraints,
-                    max_samples = max_samples
+                    min_samples = min_samples
                 )
                 results <- cbind(
                     data.frame(

@@ -156,8 +156,7 @@ check_point <- function(r,inv_alpha,rconstraints=NULL,gN_max=NULL){
 # }
 
 # Function that generates many random points and checks our constraints and feasibility by monte carlo sampling
-# desired feasible is the number of points we want in the feasibility region
-# max_samples is the max number of samples before it gives up
+# npts is the number of points we want in the feasibility region
 integrate_area <- function(
     alpha,
     rconstraints=NULL,
@@ -196,6 +195,31 @@ integrate_area <- function(
     within_r_boundaries,
     rconstraints = rconstraints
   )
+
+  # ensure that we end up with at least npts feasible pairs of vital rates
+  while(sum(r_to_keep)<npts){
+    # sample feasible equilibria
+    N_feasible_new <- sapply(gN_max, function(x,npts) runif(npts,0,x), npts=(npts-sum(r_to_keep)))
+
+    # convert equilibria to growth rates
+    r_feasible_new <- N_feasible_new %*% t(alpha)
+
+    # some manipulation
+    r_feasible_new <- as.data.frame(r_feasible_new)
+    colnames(r_feasible_new) <- c("ri","rj")
+
+    # check whether or not each point is within the model-based constraints on r
+    r_to_keep_new <- apply(
+      r_feasible_new,
+      1,
+      within_r_boundaries,
+      rconstraints = rconstraints
+    )
+
+    # add them to the end
+    r_feasible <- rbind(r_feasible, r_feasible_new)
+    r_to_keep <- c(r_to_keep, r_to_keep_new)
+  }
 
   return(list(coords=r_feasible[r_to_keep,], unfeasible=r_feasible[!r_to_keep,]))
 }
@@ -406,7 +430,7 @@ structural_stability_wrapper <- function(
   alpha,
   gN_max,
   rconstraints,
-  max_samples = 2E5
+  min_samples = 2E5
 ){
 
   #we do a mcmc integration of the feasible area
@@ -414,7 +438,7 @@ structural_stability_wrapper <- function(
     alpha = alpha,
     rconstraints = rconstraints,
     gN_max = gN_max,
-    npts = max_samples
+    npts = min_samples
   )
 
   # use the feasible points to define the convex hull of the feasibility domain

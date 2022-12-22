@@ -251,7 +251,7 @@ for(tmodel in c('beverton_holt','ricker')){
                 # label the axes
                 if(cntr %in% c(2,3)){
                     mtext(
-                        bquote(.(vtext) ~ "vital rate," ~ italic(r[i])),
+                        bquote(.(vtext) ~ "vital rate," ~ italic(r)["G. rosea"]),
                         side = 1,
                         # outer = TRUE,
                         line=2.75,
@@ -260,7 +260,7 @@ for(tmodel in c('beverton_holt','ricker')){
                 }
                 if(cntr %in% c(0,2)){
                     mtext(
-                        bquote(.(ttext) ~ "vital rate," ~ italic(r[j])),
+                        bquote(.(ttext) ~ "vital rate," ~ italic(r)["T. cyanopetala"]),
                         side = 2,
                         line=2.25,
                         # outer = TRUE,

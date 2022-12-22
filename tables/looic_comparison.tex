@@ -1,0 +1,19 @@
+%latex.default(values, file = here("tables/looic_comparison.tex"),     label = "tab:compare", rowname = NULL, caption = "Model comparison in the \\emph{open} and \\emph{woody} environments. LOOIC (leave-one-out cross-validation information criteria) penalizes models for the number of parameters, and the lowest value reflects the best-performing model. The weight for each model is an estimate of the probability that the model will make the best predictions of new data based on the the set of models considered.")%
+\begin{table}[h]
+\caption{Model comparison for data collected in the \emph{open} environment, the \emph{woody} environment, and for all data together. LOOIC (leave-one-out cross-validation information criteria) penalizes models for the number of parameters, and the lowest value reflects the best-performing model. The resulting Akaike weight for each model is an estimate of the probability that the model will make the best predictions of new data across the the set of models considered.\label{tab:compare}} 
+\begin{center}
+\begin{tabular}{llcccccc}
+\hline\hline
+\multicolumn{1}{c}{\multirow{2}{*}{Species}}&\multicolumn{1}{c}{\multirow{2}{*}{Model}}&\multicolumn{2}{c}{Open}&\multicolumn{2}{c}{Woody}&\multicolumn{2}{c}{All}\\
+& &\multicolumn{1}{c}{LOOIC}&\multicolumn{1}{c}{Weight}&\multicolumn{1}{c}{LOOIC}&\multicolumn{1}{c}{Weight}&\multicolumn{1}{c}{LOOIC}&\multicolumn{1}{c}{Weight}\tabularnewline
+\hline
+% &&LOOIC&Weight&LOOIC&Weight&LOOIC&Weight\tabularnewline
+\emph{G. rosea}&Null&691.96&0.01&693.45&0.00&692.70&0.00\tabularnewline
+\emph{G. rosea}&Beverton--Holt&682.73&0.55&682.95&0.39&682.84&0.47\tabularnewline
+\emph{G. rosea}&Ricker&683.18&0.44&682.10&0.60&682.64&0.52\tabularnewline
+\emph{T. cyanopetala}&Null&946.47&0.00&943.19&0.06&944.83&0.01\tabularnewline
+\emph{T. cyanopetala}&Beverton--Holt&934.95&0.66&937.60&0.92&936.28&0.88\tabularnewline
+\emph{T. cyanopetala}&Ricker&936.33&0.33&944.52&0.03&940.42&0.11\tabularnewline
+\hline
+\end{tabular}\end{center}
+\end{table}

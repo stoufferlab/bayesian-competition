@@ -64,14 +64,14 @@ for(tmodel in c("Beverton-Holt","Ricker")){
         }else{
             ann<-FALSE
         }
-
-        boxplot(
+        library(vioplot)
+        vioplot(
             log(proportion) ~ as.factor(woody),
             subset(feasibility_posteriors, vero_model==vmodel & trcy_model==tmodel),
             cex.axis=2.1,
             ann=ann,
             ylab='',
-            ylim=c(-6,10)
+            ylim=c(-10,10)
             # xlab=c('Open','Woody')
             # ann=TRUE
         )
@@ -111,9 +111,9 @@ for(tmodel in c("Beverton-Holt","Ricker")){
         }
         if(tmodel=="Beverton-Holt"){
             if(vmodel=="Beverton-Holt"){
-                text(1.5,11.7,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
+                text(1.5,12.2,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
             }else{
-                text(1.5,11.7,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
+                text(1.5,12.2,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=NA)
             }
             # mtext(vmodel,side=3,cex=2,line=1)
         }else{
@@ -151,7 +151,7 @@ for(tmodel in c("Beverton-Holt","Ricker")){
 # )
 text(
     -0,
-    33.8,
+    40.2,
     expression(italic("Goodenia rosea")),
     xpd=NA,
     # side=3,

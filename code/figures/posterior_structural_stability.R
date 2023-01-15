@@ -64,9 +64,12 @@ for(tmodel in c("Beverton-Holt","Ricker")){
         }else{
             ann<-FALSE
         }
-        boxplot(
-            log(area_feasible) ~ as.factor(woody),
-            subset(feasibility_posteriors, vero_model==vmodel & trcy_model==tmodel),
+        dd.tmp <- subset(feasibility_posteriors, vero_model==vmodel & trcy_model==tmodel)
+        dd.tmp$woody <- as.factor(dd.tmp$woody)
+        library(vioplot)
+        vioplot(
+            log(area_feasible) ~ woody,
+            dd.tmp,
             cex.axis=2.1,
             ann=ann,
             ylab=''
@@ -75,7 +78,14 @@ for(tmodel in c("Beverton-Holt","Ricker")){
             # ann=TRUE
         )
         
-        
+        # mylevels <- levels(dd.tmp$woody)
+        # for(i in 1:length(mylevels)){
+        #     thislevel <- mylevels[i]
+        #     thisvalues <- log(dd.tmp$area_feasible[dd.tmp$woody==thislevel])
+        #     myjitter <- jitter(rep(i, length(thisvalues)), amount=0.15)
+        #     points(myjitter, thisvalues)
+        # }
+   
         # small_outcome_probs <- outcome_probs[,c(paste0(vmodel,"_",tmodel,"_1"),paste0(vmodel,"_",tmodel,"_0"))]
         # barplot(
         #     small_outcome_probs,

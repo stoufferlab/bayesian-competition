@@ -59,7 +59,8 @@ posterior_distributions <- function(model, xlim1=NULL, xlim2=NULL){
       legend.margin = margin()
     ) +
     xlab('Value') +
-    theme(axis.title.x = element_text(size=15))
+    theme(axis.title.x = element_text(size=15)) +
+    geom_vline(xintercept=0, linetype='dotted')
 
   if(!is.null(xlim1)){
     competition_plot <- competition_plot + xlim(xlim1[1], xlim1[2])

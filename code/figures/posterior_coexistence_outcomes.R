@@ -37,7 +37,7 @@ layout.matrix <- matrix(
 )
 layout(mat = layout.matrix, heights=c(1,1), widths = c(2,2))
 
-par(oma = c(2, 14, 4, 3))
+par(oma = c(4, 14, 4, 3))
 
 par(mar = c(2, 3, 2, 5))
 
@@ -56,9 +56,12 @@ for(tmodel in c("Beverton-Holt","Ricker")){
         if(vmodel!="Beverton-Holt"){
             text(1.08,1.3,tmodel,adj=c(0.5,0.5),cex=2.2,xpd=TRUE,srt=270)
         }
-        if(tmodel=="Beverton-Holt")
+        if(tmodel=="Beverton-Holt"){
             text(0.5,2.55,vmodel,adj=c(0.5,0.5),cex=2.2,xpd=TRUE)
-            # mtext(vmodel,side=3,cex=2)
+        }else{
+            mtext("Proportion of posterior draws",cex=1.7,side=1,padj=2.75)
+        }
+
         # add a symbol to indicate median prediction
         median_outcome_0 <- subset(feasibility_posteriors, median & vero_model == vmodel & trcy_model == tmodel & woody==0)$biological_outcome
         median_outcome_1 <- subset(feasibility_posteriors, median & vero_model == vmodel & trcy_model == tmodel & woody==1)$biological_outcome
@@ -107,6 +110,5 @@ text(
     cex=2.9,
     srt=270
 )
-
 
 dev.off()

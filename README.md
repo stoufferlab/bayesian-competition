@@ -1,6 +1,6 @@
 # Bayesian analyses of annual-plant coexistence and structural stability
 
-<!--[![DOI](https://zenodo.org/badge/516149479.svg)](https://zenodo.org/badge/latestdoi/516149479)-->
+[![DOI](https://zenodo.org/badge/124013430.svg)](https://zenodo.org/badge/latestdoi/124013430)
 
 Code to support the manuscript *Environmental context, parameter sensitivity, and structural sensitivity impact predictions of annual-plant coexistence* accepted at *Ecological Monographs* by Alba Cervantes-Loreto et al.
 
